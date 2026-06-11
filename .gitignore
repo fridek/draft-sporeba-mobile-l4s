@@ -1,6 +1,4 @@
-<<<<<<< HEAD
 markdown-exports
-=======
 *.html
 *.pdf
 *.redxml
@@ -25,4 +23,3 @@ draft-sporeba-mobile-l4s.xml
 package-lock.json
 report.xml
 !requirements.txt
->>>>>>> refs/remotes/origin/main
