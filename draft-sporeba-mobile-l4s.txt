@@ -2,34 +2,35 @@
 
 
 
-WG Working Group                                              Y. N. Here
-Internet-Draft                                    Your Organization Here
-Intended status: Informational                              10 June 2026
-Expires: 12 December 2026
+TSVWG Working Group                                            S. Poreba
+Internet-Draft                                                L. Colitti
+Intended status: Best Current Practice                        Google LLC
+Expires: 13 December 2026                                   11 June 2026
 
 
-                           TODO - Your title
-                  draft-todo-yourname-protocol-latest
+     Practical Deployment Considerations for L4S in Mobile Networks
+                    draft-sporeba-mobile-l4s-latest
 
 Abstract
 
-   TODO Abstract
+   This document describes practical deployment considerations for Low
+   Latency, Low Loss, and Scalable Throughput (L4S) in mobile (cellular)
+   networks.  It defines the responsibilities of the Host Operating
+   System, the Modem Subsystem, and Middleboxes to ensure successful
+   end-to-end low-latency communication.  It targets a Best Current
+   Practice (BCP) status.
 
 About This Document
 
    This note is to be removed before publishing as an RFC.
 
    The latest revision of this draft can be found at
-   https://example.com/LATEST.  Status information for this document may
-   be found at https://datatracker.ietf.org/doc/draft-todo-yourname-
-   protocol/.
-
-   Discussion of this document takes place on the WG Working Group
-   mailing list (mailto:WG@example.com), which is archived at
-   https://example.com/WG.
+   https://fridek.github.io/draft-sporeba-mobile-l4s/draft-sporeba-
+   mobile-l4s.html.  Status information for this document may be found
+   at https://datatracker.ietf.org/doc/draft-sporeba-mobile-l4s/.
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/USER/REPO.
+   https://github.com/fridek/draft-sporeba-mobile-l4s.
 
 Status of This Memo
 
@@ -46,7 +47,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 12 December 2026.
+   This Internet-Draft will expire on 13 December 2026.
 
 Copyright Notice
 
@@ -65,18 +66,41 @@ Copyright Notice
 Table of Contents
 
    1.  Introduction
-   2.  Conventions and Definitions
-   3.  Security Considerations
-   4.  IANA Considerations
-   5.  Normative References
-   Acknowledgments
-   Author's Address
+     1.1.  Conventions and Definitions
+   2.  Host Operating System (OS) Requirements
+     2.1.  Socket APIs for UDP/QUIC and WebRTC
+     2.2.  UDP Out-of-Order Delivery
+     2.3.  TCP Accurate ECN (AccECN) and Fallback
+   3.  Modem Subsystem Requirements
+     3.1.  Packet Classification
+     3.2.  Multi-Queue Scheduling and Bounded Latency
+     3.3.  Uplink Active Queue Management (AQM)
+     3.4.  Defense Against Misbehaving Traffic (Queue Protection)
+     3.5.  Transparency and Bleach Prevention
+   4.  Middlebox Requirements
+     4.1.  ECN and AccECN Transparency
+     4.2.  Handshake Forwarding
+   5.  Security Considerations
+   6.  IANA Considerations
+   7.  Normative References
+   Authors' Addresses
 
 1.  Introduction
 
-   TODO Introduction
+   Mobile cellular networks (LTE and 5G) frequently suffer from latency
+   spikes due to queue build-up (bufferbloat) in the radio access
+   network (RAN) and modem buffers.  L4S (Low Latency, Low Loss,
+   Scalable Throughput) [RFC9330] offers a framework to significantly
+   reduce queuing delay while maintaining high throughput.
 
-2.  Conventions and Definitions
+   Deploying L4S in a cellular ecosystem requires co-operation across
+   multiple layers: the application, the host operating system (OS), the
+   modem baseband firmware, and the core network middleboxes [RFC 3234].
+   This document outlines practical deployment considerations and
+   requirements for each of these subsystems to achieve reliable, low-
+   latency performance in the field.
+
+1.1.  Conventions and Definitions
 
    The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
    "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
@@ -84,15 +108,145 @@ Table of Contents
    BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
    capitals, as shown here.
 
-3.  Security Considerations
+2.  Host Operating System (OS) Requirements
 
-   TODO Security
+   The host operating system controls application-level network access
+   and hosts the primary TCP and UDP transport stacks.
 
-4.  IANA Considerations
+2.1.  Socket APIs for UDP/QUIC and WebRTC
+
+   To enable userspace transport stacks (such as QUIC and WebRTC) to
+   utilize L4S, the OS MUST provide APIs that allow applications to: 1.
+   Set the ECN codepoint to ECT(1) [RFC9331] on outgoing packets. 2.
+   Read the ECN codepoints (specifically CE markings) of incoming
+   packets.
+
+   These capabilities MUST be exposed via standard socket options (e.g.,
+   IP_TOS and IPV6_TCLASS for setting, and IP_RECVTOS and
+   IPV6_RECVTCLASS via ancillary data for reading) and MUST NOT be
+   restricted by default security policies for standard application
+   sockets.
+
+2.2.  UDP Out-of-Order Delivery
+
+   Out-of-order packet delivery is common in cellular networks due to
+   multi-path transmission or link-layer retransmissions.  Unlike TCP,
+   UDP does not require in-order delivery at the transport layer, and
+   applications like QUIC and WebRTC handle packet reordering in
+   userspace.
+
+   The host OS network stack MUST NOT delay or block incoming UDP
+   packets to enforce ordering.  Enforcing in-order delivery for UDP in
+   the OS kernel or driver introduces unnecessary Head-of-Line (HOL)
+   blocking latency.
+
+2.3.  TCP Accurate ECN (AccECN) and Fallback
+
+   The host OS kernel TCP stack SHOULD support AccECN negotiation
+   [draft-ietf-tcpm-accurate-ecn] and an L4S-compatible congestion
+   control algorithm (e.g., TCP Prague).
+
+   To defend against middleboxes that drop SYN packets containing ECN or
+   AccECN options, the client TCP stack MUST implement a fallback
+   mechanism: if the initial SYN packet containing ECN/AccECN options
+   times out or is dropped, the stack MUST retransmit the SYN on the
+   second attempt without ECN or AccECN options.
+
+3.  Modem Subsystem Requirements
+
+   The modem (baseband) manages the link-layer transmission over the
+   radio interface and performs significant queueing on the uplink path.
+
+3.1.  Packet Classification
+
+   The modem MUST map uplink traffic to the low-latency queue based on
+   ECN markings: * Packets carrying the ECT(1) or CE bits in the IP
+   header MUST be steered to the low-latency queue. * The modem SHOULD
+   also support mapping to the low-latency queue based on the Non-Queue-
+   Building (NQB) DSCP value (45) [draft-ietf-tsvwg-nqb] as an
+   alternative or supplementary classifier.
+
+3.2.  Multi-Queue Scheduling and Bounded Latency
+
+   The modem MUST support a low-latency queue designated for Non-Queue-
+   Building [draft-ietf-tsvwg-nqb] traffic.  Some modem systems are
+   known to already support high-priority and low-priority queues.  In
+   the presence of such queues, low-latency queue MUST be distinct from
+   them.  An example configuration might be:
+
+   1.  *L4S/Low-Latency Queue:* For ECT(1) and DSCP-45 marked traffic.
+
+   2.  *High-Priority Queue:* For signaling, IMS voice (VoLTE/VoNR), and
+       other critical real-time traffic.
+
+   3.  *Low-Priority Queue:* For queue-building traffic (e.g., CUBIC/
+       Reno) and bulk data.
+
+   The scheduler MUST prioritize the Low-Latency Queue, but SHOULD use a
+   scheduling algorithm (e.g., Weighted Fair Queueing) that prevents
+   starvation of other queues.
+
+3.3.  Uplink Active Queue Management (AQM)
+
+   The modem uplink buffer is often a bottleneck due to cellular grant
+   scheduling.  When the uplink queue builds up, the modem MUST perform
+   ECN marking: * If the sojourn time of a packet in the L4S queue
+   exceeds a shallow threshold (e.g., 1 ms to 5 ms), the modem MUST mark
+   the packet as CE in the IP header before transmitting it, rather than
+   dropping it. * Packets MUST only be dropped if the queue reaches the
+   maximum designated size.
+
+3.4.  Defense Against Misbehaving Traffic (Queue Protection)
+
+   Applications may mark their traffic as NQB or ECT(1) without
+   implementing L4S congestion control, causing queue build-up in the
+   low-latency queue. * The modem MUST enforce a strict size limit on
+   the Low-Latency Queue (e.g. 16kB).  If the queue is full, incoming
+   packets MUST be dropped. * The modem SHOULD monitor queue build-up
+   and latency contributions of individual flows within the L4S queue. *
+   If a flow is detected to be queue-building (e.g., contributing to
+   sustained queue latency above the marking threshold without
+   responding to CE marks), the modem MUST demote the flow and redirect
+   its packets to a different queue.
+
+3.5.  Transparency and Bleach Prevention
+
+   The modem MUST NOT modify the ECN bits, TCP flags, or AccECN TCP
+   options (172 and 174) on transit traffic, except for performing
+   standard CE marking when congested.
+
+4.  Middlebox Requirements
+
+   Middleboxes include cellular core network elements (such as the UPF
+   and PGW), firewalls, NATs, and deep packet inspection (DPI)
+   appliances.
+
+4.1.  ECN and AccECN Transparency
+
+   Middleboxes MUST NOT clear (bleach) ECN bits.  They MUST preserve
+   ECT(0), ECT(1), and CE markings on all IP packets.  Furthermore,
+   middleboxes MUST NOT strip, modify, or drop packets containing TCP
+   options 172 or 174.
+
+4.2.  Handshake Forwarding
+
+   Middleboxes MUST transparently forward SYN and SYN-ACK packets that
+   negotiate ECN or AccECN.  Middleboxes MUST NOT drop TCP handshake
+   packets solely due to the presence of ECN negotiation flags or AccECN
+   TCP options.
+
+5.  Security Considerations
+
+   L4S introduces potential abuse vectors where applications mark queue-
+   building traffic as low-latency.  As described in Section 4.4, the
+   baseband/modem subsystem MUST deploy queue protection mechanisms to
+   defend the low-latency queue from starvation and latency degradation.
+
+6.  IANA Considerations
 
    This document has no IANA actions.
 
-5.  Normative References
+7.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -103,12 +257,13 @@ Table of Contents
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
 
-Acknowledgments
+Authors' Addresses
 
-   TODO acknowledge.
+   Sebastian Poreba
+   Google LLC
+   Email: sporeba@google.com
 
-Author's Address
 
-   Your Name Here
-   Your Organization Here
-   Email: your.email@example.com
+   Lorenzo Colitti
+   Google LLC
+   Email: lorenzo@google.com
