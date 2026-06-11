@@ -2,7 +2,7 @@
 title: "Practical Deployment Considerations for L4S in Mobile Networks"
 abbrev: "L4S Mobile Deploy"
 category: bcp
-docname: draft-sporeba-mobile-l4s-00
+docname: draft-sporeba-mobile-l4s-latest
 submissiontype: IETF
 number:
 date:
@@ -66,7 +66,7 @@ To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, t
 These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` and `IPV6_TCLASS` for setting, and `IP_RECVTOS` and `IPV6_RECVTCLASS` via ancillary data for reading) and MUST NOT be restricted by default security policies for standard application sockets.
 
 ## UDP Out-of-Order Delivery
-Out-of-order packet delivery is common in cellular networks due to multi-path transmission or link-layer retransmissions. Unlike TCP, UDP does not require in-order delivery at the transport layer, and applications like QUIC and WebRTC handle packet reordering in userspace. 
+Out-of-order packet delivery is common in cellular networks due to multi-path transmission or link-layer retransmissions. Unlike TCP, UDP does not require in-order delivery at the transport layer, and applications like QUIC and WebRTC handle packet reordering in userspace.
 
 The host OS network stack MUST NOT delay or block incoming UDP packets to enforce ordering. Enforcing in-order delivery for UDP in the OS kernel or driver introduces unnecessary Head-of-Line (HOL) blocking latency.
 
@@ -100,7 +100,7 @@ The modem uplink buffer is often a bottleneck due to cellular grant scheduling. 
 * Packets MUST only be dropped if the queue reaches the maximum designated size.
 
 ## Defense Against Misbehaving Traffic (Queue Protection)
-Applications may mark their traffic as NQB or `ECT(1)` without implementing L4S congestion control, causing queue build-up in the low-latency queue. 
+Applications may mark their traffic as NQB or `ECT(1)` without implementing L4S congestion control, causing queue build-up in the low-latency queue.
 * The modem MUST enforce a strict size limit on the Low-Latency Queue (e.g. 16kB). If the queue is full, incoming packets MUST be dropped.
 * The modem SHOULD monitor queue build-up and latency contributions of individual flows within the L4S queue.
 * If a flow is detected to be queue-building (e.g., contributing to sustained queue latency above the marking threshold without responding to CE marks), the modem MUST demote the flow and redirect its packets to a different queue.
