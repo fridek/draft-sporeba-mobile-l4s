@@ -1,90 +1,128 @@
 ---
-###
-# Internet-Draft Markdown Template
-#
-# Rename this file from draft-todo-yourname-protocol.md to get started.
-# Draft name format is "draft-<yourname>-<workgroup>-<name>.md".
-#
-# For initial setup, you only need to edit the first block of fields.
-# Only "title" needs to be changed; delete "abbrev" if your title is short.
-# Any other content can be edited, but be careful not to introduce errors.
-# Some fields will be set automatically during setup if they are unchanged.
-#
-# Don't include "-00" or "-latest" in the filename.
-# Labels in the form draft-<yourname>-<workgroup>-<name>-latest are used by
-# the tools to refer to the current version; see "docname" for example.
-#
-# This template uses kramdown-rfc: https://github.com/cabo/kramdown-rfc
-# You can replace the entire file if you prefer a different format.
-# Change the file extension to match the format (.xml for XML, etc...)
-#
-###
-title: "TODO - Your title"
-abbrev: "TODO - Abbreviation"
-category: info
-
-docname: draft-todo-yourname-protocol-latest
-submissiontype: IETF  # also: "independent", "editorial", "IAB", or "IRTF"
+title: "Practical Deployment Considerations for L4S in Mobile Networks"
+abbrev: "L4S Mobile Deploy"
+category: bcp
+docname: draft-sporeba-mobile-l4s-00
+submissiontype: IETF
 number:
 date:
 consensus: true
 v: 3
-area: AREA
-workgroup: WG Working Group
+area: Transport
+workgroup: TSVWG Working Group
 keyword:
- - next generation
- - unicorn
- - sparkling distributed ledger
+ - L4S
+ - Mobile
+ - Cellular
+ - ECN
+ - AccECN
+ - NQB
 venue:
-  group: WG
+  group: TSVWG
   type: Working Group
-  mail: WG@example.com
-  arch: https://example.com/WG
-  github: USER/REPO
-  latest: https://example.com/LATEST
 
 author:
  -
-    fullname: Your Name Here
-    organization: Your Organization Here
-    email: your.email@example.com
+    fullname: Sebastian Poreba
+    organization: Google LLC
+    email: sporeba@google.com
+ -
+    fullname: Lorenzo Colitti
+    organization: Google LLC
+    email: lorenzo@google.com
 
 normative:
 
 informative:
 
 ...
-
 --- abstract
 
-TODO Abstract
-
+This document describes practical deployment considerations for Low Latency, Low Loss, and Scalable Throughput (L4S) in mobile (cellular) networks. It defines the responsibilities of the Host Operating System, the Modem Subsystem, and Middleboxes to ensure successful end-to-end low-latency communication. It targets a Best Current Practice (BCP) status.
 
 --- middle
 
 # Introduction
 
-TODO Introduction
+Mobile cellular networks (LTE and 5G) frequently suffer from latency spikes due to queue build-up (bufferbloat) in the radio access network (RAN) and modem buffers. L4S (Low Latency, Low Loss, Scalable Throughput) [RFC9330] offers a framework to significantly reduce queuing delay while maintaining high throughput.
 
+Deploying L4S in a cellular ecosystem requires co-operation across multiple layers: the application, the host operating system (OS), the modem baseband firmware, and the core network middleboxes [RFC 3234]. This document outlines practical deployment considerations and requirements for each of these subsystems to achieve reliable, low-latency performance in the field.
 
-# Conventions and Definitions
+## Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
 
+# Host Operating System (OS) Requirements
+
+The host operating system controls application-level network access and hosts the primary TCP and UDP transport stacks.
+
+## Socket APIs for UDP/QUIC and WebRTC
+To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, the OS MUST provide APIs that allow applications to:
+1. Set the ECN codepoint to `ECT(1)` [RFC9331] on outgoing packets.
+2. Read the ECN codepoints (specifically `CE` markings) of incoming packets.
+
+These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` and `IPV6_TCLASS` for setting, and `IP_RECVTOS` and `IPV6_RECVTCLASS` via ancillary data for reading) and MUST NOT be restricted by default security policies for standard application sockets.
+
+## UDP Out-of-Order Delivery
+Out-of-order packet delivery is common in cellular networks due to multi-path transmission or link-layer retransmissions. Unlike TCP, UDP does not require in-order delivery at the transport layer, and applications like QUIC and WebRTC handle packet reordering in userspace. 
+
+The host OS network stack MUST NOT delay or block incoming UDP packets to enforce ordering. Enforcing in-order delivery for UDP in the OS kernel or driver introduces unnecessary Head-of-Line (HOL) blocking latency.
+
+## TCP Accurate ECN (AccECN) and Fallback
+The host OS kernel TCP stack SHOULD support AccECN negotiation [draft-ietf-tcpm-accurate-ecn] and an L4S-compatible congestion control algorithm (e.g., TCP Prague).
+
+To defend against middleboxes that drop `SYN` packets containing ECN or AccECN options, the client TCP stack MUST implement a fallback mechanism: if the initial `SYN` packet containing ECN/AccECN options times out or is dropped, the stack MUST retransmit the `SYN` on the second attempt without ECN or AccECN options.
+
+# Modem Subsystem Requirements
+
+The modem (baseband) manages the link-layer transmission over the radio interface and performs significant queueing on the uplink path.
+
+## Packet Classification
+The modem MUST map uplink traffic to the low-latency queue based on ECN markings:
+* Packets carrying the `ECT(1)` or `CE` bits in the IP header MUST be steered to the low-latency queue.
+* The modem SHOULD also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) [draft-ietf-tsvwg-nqb] as an alternative or supplementary classifier.
+
+## Multi-Queue Scheduling and Bounded Latency
+The modem MUST support a low-latency queue designated for Non-Queue-Building [draft-ietf-tsvwg-nqb] traffic. Some modem systems are known to already support high-priority and low-priority queues. In the presence of such queues, low-latency queue MUST be distinct from them.
+An example configuration might be:
+
+1. **L4S/Low-Latency Queue:** For `ECT(1)` and DSCP-45 marked traffic.
+2. **High-Priority Queue:** For signaling, IMS voice (VoLTE/VoNR), and other critical real-time traffic.
+3. **Low-Priority Queue:** For queue-building traffic (e.g., CUBIC/Reno) and bulk data.
+
+The scheduler MUST prioritize the Low-Latency Queue, but SHOULD use a scheduling algorithm (e.g., Weighted Fair Queueing) that prevents starvation of other queues.
+
+## Uplink Active Queue Management (AQM)
+The modem uplink buffer is often a bottleneck due to cellular grant scheduling. When the uplink queue builds up, the modem MUST perform ECN marking:
+* If the sojourn time of a packet in the L4S queue exceeds a shallow threshold (e.g., 1 ms to 5 ms), the modem MUST mark the packet as `CE` in the IP header before transmitting it, rather than dropping it.
+* Packets MUST only be dropped if the queue reaches the maximum designated size.
+
+## Defense Against Misbehaving Traffic (Queue Protection)
+Applications may mark their traffic as NQB or `ECT(1)` without implementing L4S congestion control, causing queue build-up in the low-latency queue. 
+* The modem MUST enforce a strict size limit on the Low-Latency Queue (e.g. 16kB). If the queue is full, incoming packets MUST be dropped.
+* The modem SHOULD monitor queue build-up and latency contributions of individual flows within the L4S queue.
+* If a flow is detected to be queue-building (e.g., contributing to sustained queue latency above the marking threshold without responding to CE marks), the modem MUST demote the flow and redirect its packets to a different queue.
+
+## Transparency and Bleach Prevention
+The modem MUST NOT modify the ECN bits, TCP flags, or AccECN TCP options (172 and 174) on transit traffic, except for performing standard `CE` marking when congested.
+
+# Middlebox Requirements
+
+Middleboxes include cellular core network elements (such as the UPF and PGW), firewalls, NATs, and deep packet inspection (DPI) appliances.
+
+## ECN and AccECN Transparency
+Middleboxes MUST NOT clear (bleach) ECN bits. They MUST preserve `ECT(0)`, `ECT(1)`, and `CE` markings on all IP packets.
+Furthermore, middleboxes MUST NOT strip, modify, or drop packets containing TCP options 172 or 174.
+
+## Handshake Forwarding
+Middleboxes MUST transparently forward `SYN` and `SYN-ACK` packets that negotiate ECN or AccECN. Middleboxes MUST NOT drop TCP handshake packets solely due to the presence of ECN negotiation flags or AccECN TCP options.
 
 # Security Considerations
 
-TODO Security
-
+L4S introduces potential abuse vectors where applications mark queue-building traffic as low-latency. As described in Section 4.4, the baseband/modem subsystem MUST deploy queue protection mechanisms to defend the low-latency queue from starvation and latency degradation.
 
 # IANA Considerations
 
 This document has no IANA actions.
 
-
 --- back
-
-# Acknowledgments
-{:numbered="false"}
-
-TODO acknowledge.
