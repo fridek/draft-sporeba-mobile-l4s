@@ -8,8 +8,8 @@ number:
 date:
 consensus: true
 v: 3
-area: Transport
-workgroup: TSVWG Working Group
+# area: Transport
+# workgroup: TSVWG Working Group
 keyword:
  - L4S
  - Mobile
@@ -18,8 +18,8 @@ keyword:
  - AccECN
  - NQB
 venue:
-  group: TSVWG
-  type: Working Group
+#  group: TSVWG
+#  type: Working Group
   github: "fridek/draft-sporeba-mobile-l4s"
   latest: "https://fridek.github.io/draft-sporeba-mobile-l4s/draft-sporeba-mobile-l4s.html"
 
@@ -37,8 +37,8 @@ normative:
   RFC3234:
   RFC9330:
   RFC9331:
-  I-D.ietf-tcpm-accurate-ecn:
-  I-D.ietf-tsvwg-nqb:
+  RFC9768:
+  RFC9956:
 
 informative:
   RFC7772:
@@ -66,8 +66,9 @@ The host operating system controls application-level network access and hosts th
 
 ## Socket APIs for UDP/QUIC and WebRTC
 To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, the OS MUST provide APIs that allow applications to:
+
 1. Set the ECN codepoint to `ECT(1)` {{RFC9331}} on outgoing packets.
-2. Read the ECN codepoints (specifically `CE` markings) of incoming packets.
+1. Read the ECN codepoints (specifically `CE` markings) of incoming packets.
 
 These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` and `IPV6_TCLASS` for setting, and `IP_RECVTOS` and `IPV6_RECVTCLASS` via ancillary data for reading) and MUST NOT be restricted by default security policies for standard application sockets.
 
@@ -77,7 +78,7 @@ Out-of-order packet delivery is common in cellular networks due to multi-path tr
 The host OS network stack MUST NOT delay or block incoming UDP packets to enforce ordering. Enforcing in-order delivery for UDP in the OS kernel or driver introduces unnecessary Head-of-Line (HOL) blocking latency.
 
 ## TCP Accurate ECN (AccECN) and Fallback
-The host OS kernel TCP stack SHOULD support AccECN negotiation {{I-D.ietf-tcpm-accurate-ecn}} and an L4S-compatible congestion control algorithm (e.g., TCP Prague).
+The host OS kernel TCP stack SHOULD support AccECN negotiation {{RFC9768}} and an L4S-compatible congestion control algorithm (e.g., TCP Prague).
 
 To defend against middleboxes that drop `SYN` packets containing ECN or AccECN options, the client TCP stack MUST implement a fallback mechanism: if the initial `SYN` packet containing ECN/AccECN options times out or is dropped, the stack MUST retransmit the `SYN` on the second attempt without ECN or AccECN options.
 
@@ -88,15 +89,15 @@ The modem (baseband) manages the link-layer transmission over the radio interfac
 ## Packet Classification
 The modem MUST map uplink traffic to the low-latency queue based on ECN markings:
 * Packets carrying the `ECT(1)` or `CE` bits in the IP header MUST be steered to the low-latency queue.
-* The modem SHOULD also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) {{I-D.ietf-tsvwg-nqb}} as an alternative or supplementary classifier.
+* The modem SHOULD also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) {{RFC9956}} as an alternative or supplementary classifier.
 
 ## Multi-Queue Scheduling and Bounded Latency
-The modem MUST support a low-latency queue designated for Non-Queue-Building {{I-D.ietf-tsvwg-nqb}} traffic. Some modem systems are known to already support high-priority and low-priority queues. In the presence of such queues, low-latency queue MUST be distinct from them.
+The modem MUST support a low-latency queue designated for Non-Queue-Building {{RFC9956}} traffic. Some modem systems are known to already support high-priority and low-priority queues. In the presence of such queues, low-latency queue MUST be distinct from them.
 An example configuration might be:
 
 1. **L4S/Low-Latency Queue:** For `ECT(1)` and DSCP-45 marked traffic.
-2. **High-Priority Queue:** For signaling, IMS voice (VoLTE/VoNR), and other critical real-time traffic.
-3. **Low-Priority Queue:** For queue-building traffic (e.g., CUBIC/Reno) and bulk data.
+1. **High-Priority Queue:** For signaling, IMS voice (VoLTE/VoNR), and other critical real-time traffic.
+1. **Low-Priority Queue:** For queue-building traffic (e.g., CUBIC/Reno) and bulk data.
 
 The scheduler MUST prioritize the Low-Latency Queue, but SHOULD use a scheduling algorithm (e.g., Weighted Fair Queueing) that prevents starvation of other queues.
 
