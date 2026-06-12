@@ -2,7 +2,7 @@
 
 
 
-TSVWG Working Group                                            S. Poreba
+Network Working Group                                          S. Poreba
 Internet-Draft                                                L. Colitti
 Intended status: Best Current Practice                        Google LLC
 Expires: 14 December 2026                                   12 June 2026
@@ -118,10 +118,12 @@ Table of Contents
 2.1.  Socket APIs for UDP/QUIC and WebRTC
 
    To enable userspace transport stacks (such as QUIC and WebRTC) to
-   utilize L4S, the OS MUST provide APIs that allow applications to: 1.
-   Set the ECN codepoint to ECT(1) [RFC9331] on outgoing packets. 2.
-   Read the ECN codepoints (specifically CE markings) of incoming
-   packets.
+   utilize L4S, the OS MUST provide APIs that allow applications to:
+
+   1.  Set the ECN codepoint to ECT(1) [RFC9331] on outgoing packets.
+
+   2.  Read the ECN codepoints (specifically CE markings) of incoming
+       packets.
 
    These capabilities MUST be exposed via standard socket options (e.g.,
    IP_TOS and IPV6_TCLASS for setting, and IP_RECVTOS and
@@ -145,8 +147,8 @@ Table of Contents
 2.3.  TCP Accurate ECN (AccECN) and Fallback
 
    The host OS kernel TCP stack SHOULD support AccECN negotiation
-   [I-D.ietf-tcpm-accurate-ecn] and an L4S-compatible congestion control
-   algorithm (e.g., TCP Prague).
+   [RFC9768] and an L4S-compatible congestion control algorithm (e.g.,
+   TCP Prague).
 
    To defend against middleboxes that drop SYN packets containing ECN or
    AccECN options, the client TCP stack MUST implement a fallback
@@ -165,16 +167,16 @@ Table of Contents
    ECN markings: * Packets carrying the ECT(1) or CE bits in the IP
    header MUST be steered to the low-latency queue. * The modem SHOULD
    also support mapping to the low-latency queue based on the Non-Queue-
-   Building (NQB) DSCP value (45) [I-D.ietf-tsvwg-nqb] as an alternative
-   or supplementary classifier.
+   Building (NQB) DSCP value (45) [RFC9956] as an alternative or
+   supplementary classifier.
 
 3.2.  Multi-Queue Scheduling and Bounded Latency
 
    The modem MUST support a low-latency queue designated for Non-Queue-
-   Building [I-D.ietf-tsvwg-nqb] traffic.  Some modem systems are known
-   to already support high-priority and low-priority queues.  In the
-   presence of such queues, low-latency queue MUST be distinct from
-   them.  An example configuration might be:
+   Building [RFC9956] traffic.  Some modem systems are known to already
+   support high-priority and low-priority queues.  In the presence of
+   such queues, low-latency queue MUST be distinct from them.  An
+   example configuration might be:
 
    1.  *L4S/Low-Latency Queue:* For ECT(1) and DSCP-45 marked traffic.
 
@@ -252,21 +254,6 @@ Table of Contents
 
 7.1.  Normative References
 
-   [I-D.ietf-tcpm-accurate-ecn]
-              Briscoe, B., Kühlewind, M., and R. Scheffenegger, "More
-              Accurate Explicit Congestion Notification (AccECN)
-              Feedback in TCP", Work in Progress, Internet-Draft, draft-
-              ietf-tcpm-accurate-ecn-34, 10 March 2025,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-tcpm-
-              accurate-ecn-34>.
-
-   [I-D.ietf-tsvwg-nqb]
-              White, G., Fossati, T., and R. Geib, "A Non-Queue-Building
-              Per-Hop Behavior (NQB PHB) for Differentiated Services",
-              Work in Progress, Internet-Draft, draft-ietf-tsvwg-nqb-33,
-              16 September 2025, <https://datatracker.ietf.org/doc/html/
-              draft-ietf-tsvwg-nqb-33>.
-
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
@@ -291,6 +278,16 @@ Table of Contents
               Low Loss, and Scalable Throughput (L4S)", RFC 9331,
               DOI 10.17487/RFC9331, January 2023,
               <https://www.rfc-editor.org/rfc/rfc9331>.
+
+   [RFC9768]  Briscoe, B., Kühlewind, M., and R. Scheffenegger, "More
+              Accurate Explicit Congestion Notification (AccECN)
+              Feedback in TCP", RFC 9768, DOI 10.17487/RFC9768, April
+              2026, <https://www.rfc-editor.org/rfc/rfc9768>.
+
+   [RFC9956]  White, G., Fossati, T., and R. Geib, "A Non-Queue-Building
+              Per-Hop Behavior (NQB PHB) for Differentiated Services",
+              RFC 9956, DOI 10.17487/RFC9956, May 2026,
+              <https://www.rfc-editor.org/rfc/rfc9956>.
 
 7.2.  Informative References
 
