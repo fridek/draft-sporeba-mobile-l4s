@@ -8,8 +8,8 @@ number:
 date:
 consensus: true
 v: 3
-# area: Transport
-# workgroup: TSVWG Working Group
+area: Transport
+workgroup: TSVWG Working Group
 keyword:
  - L4S
  - Mobile
@@ -88,29 +88,32 @@ The modem (baseband) manages the link-layer transmission over the radio interfac
 
 ## Packet Classification
 The modem MUST map uplink traffic to the low-latency queue based on ECN markings:
-* Packets carrying the `ECT(1)` or `CE` bits in the IP header MUST be steered to the low-latency queue.
-* The modem SHOULD also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) {{RFC9956}} as an alternative or supplementary classifier.
+
+*  Packets carrying the `ECT(1)` or `CE` bits in the IP header MUST be steered to the low-latency queue.
+*  The modem SHOULD also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) {{RFC9956}} as an alternative or supplementary classifier.
 
 ## Multi-Queue Scheduling and Bounded Latency
 The modem MUST support a low-latency queue designated for Non-Queue-Building {{RFC9956}} traffic. Some modem systems are known to already support high-priority and low-priority queues. In the presence of such queues, low-latency queue MUST be distinct from them.
 An example configuration might be:
 
-1. **L4S/Low-Latency Queue:** For `ECT(1)` and DSCP-45 marked traffic.
-1. **High-Priority Queue:** For signaling, IMS voice (VoLTE/VoNR), and other critical real-time traffic.
-1. **Low-Priority Queue:** For queue-building traffic (e.g., CUBIC/Reno) and bulk data.
+*  **L4S/Low-Latency Queue:** For `ECT(1)` and DSCP-45 marked traffic.
+*  **High-Priority Queue:** For signaling, IMS voice (VoLTE/VoNR), and other critical real-time traffic.
+*  **Low-Priority Queue:** For queue-building traffic (e.g., CUBIC/Reno) and bulk data.
 
 The scheduler MUST prioritize the Low-Latency Queue, but SHOULD use a scheduling algorithm (e.g., Weighted Fair Queueing) that prevents starvation of other queues.
 
 ## Uplink Active Queue Management (AQM)
 The modem uplink buffer is often a bottleneck due to cellular grant scheduling. When the uplink queue builds up, the modem MUST perform ECN marking:
-* If the sojourn time of a packet in the L4S queue exceeds a shallow threshold (e.g., 1 ms to 5 ms), the modem MUST mark the packet as `CE` in the IP header before transmitting it, rather than dropping it.
-* Packets MUST only be dropped if the queue reaches the maximum designated size.
+
+*  If the sojourn time of a packet in the L4S queue exceeds a shallow threshold (e.g., 1 ms to 5 ms), the modem MUST mark the packet as `CE` in the IP header before transmitting it, rather than dropping it.
+*  Packets MUST only be dropped if the queue reaches the maximum designated size.
 
 ## Defense Against Misbehaving Traffic (Queue Protection)
 Applications may mark their traffic as NQB or `ECT(1)` without implementing L4S congestion control, causing queue build-up in the low-latency queue.
-* The modem MUST enforce a strict size limit on the Low-Latency Queue (e.g. 16kB). If the queue is full, incoming packets MUST be dropped.
-* The modem SHOULD monitor queue build-up and latency contributions of individual flows within the L4S queue.
-* If a flow is detected to be queue-building (e.g., contributing to sustained queue latency above the marking threshold without responding to CE marks), the modem MUST demote the flow and redirect its packets to a different queue.
+
+*  The modem MUST enforce a strict size limit on the Low-Latency Queue (e.g. 16kB). If the queue is full, incoming packets MUST be dropped.
+*  The modem SHOULD monitor queue build-up and latency contributions of individual flows within the L4S queue.
+*  If a flow is detected to be queue-building (e.g., contributing to sustained queue latency above the marking threshold without responding to CE marks), the modem MUST demote the flow and redirect its packets to a different queue.
 
 ## Transparency and Bleach Prevention
 The modem MUST NOT modify the ECN bits, TCP flags, or AccECN TCP options (172 and 174) on transit traffic, except for performing standard `CE` marking when congested.
