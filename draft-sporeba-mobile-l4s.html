@@ -1330,12 +1330,10 @@ Some modem systems are known to already support high-priority and low-priority q
             <p id="section-3.3-2.1.1">Packets carrying the <code>ECT(1)</code> or <code>CE</code> bits in the IP header <span class="bcp14">MUST</span> be steered to the low-latency queue.<a href="#section-3.3-2.1.1" class="pilcrow">¶</a></p>
 </li>
           <li class="normal" id="section-3.3-2.2">
-            <p id="section-3.3-2.2.1">The modem <span class="bcp14">SHOULD</span> also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) <span>[<a href="#RFC9956" class="cite xref">RFC9956</a>]</span> as an alternative or supplementary classifier.<a href="#section-3.3-2.2.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-3.3-2.3">
-            <p id="section-3.3-2.3.1">TODO: Align this section with <span>[<a href="#I-D.livingood-low-latency-deployment" class="cite xref">I-D.livingood-low-latency-deployment</a>]</span><a href="#section-3.3-2.3.1" class="pilcrow">¶</a></p>
+            <p id="section-3.3-2.2.1">The modem <span class="bcp14">SHOULD</span> also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) <span>[<a href="#RFC9956" class="cite xref">RFC9956</a>]</span> as an alternative or supplementary classifier. Because DSCP markings are frequently bleached at carrier interconnect boundaries, ECN mapping remains the most reliable end-to-end classifier for mobile networks.<a href="#section-3.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
+<p id="section-3.3-3">Link-layer networks <span class="bcp14">MUST NOT</span> attempt to dynamically classify packets for the low-latency queue using heuristic traffic inference or Deep Packet Inspection (DPI). Classification <span class="bcp14">MUST</span> rely solely on the explicit packet markings set by the application endpoints. This ensures compatibility with fully encrypted payloads and aligns with the end-to-end principle and permissionless innovation, as discussed in the ISP deployment observations in <span>[<a href="#I-D.livingood-low-latency-deployment" class="cite xref">I-D.livingood-low-latency-deployment</a>]</span> (which also contains details on Wi-Fi link-layer queuing considerations).<a href="#section-3.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="uplink-active-queue-management-aqm">
@@ -1388,8 +1386,8 @@ Some modem systems are known to already support high-priority and low-priority q
       <h2 id="name-middlebox-requirements">
 <a href="#section-4" class="section-number selfRef">4. </a><a href="#name-middlebox-requirements" class="section-name selfRef">Middlebox Requirements</a>
       </h2>
-<p id="section-4-1">Middleboxes include cellular core network elements (such as the UPF and PGW), firewalls, NATs, and deep packet inspection (DPI) appliances.
-TODO: Align with <span>[<a href="#I-D.livingood-low-latency-deployment" class="cite xref">I-D.livingood-low-latency-deployment</a>]</span><a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-1">Middleboxes include cellular core network elements (such as the UPF and PGW), firewalls, NATs, and deep packet inspection (DPI) appliances.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">Middleboxes <span class="bcp14">MUST NOT</span> perform network-based classification or rewrite ECN/DSCP markings based on traffic heuristics or DPI. In accordance with <span>[<a href="#I-D.livingood-low-latency-deployment" class="cite xref">I-D.livingood-low-latency-deployment</a>]</span>, active classification decisions <span class="bcp14">MUST</span> be left to the application endpoints, and middleboxes <span class="bcp14">MUST</span> restrict their role to passive, transparent forwarding.<a href="#section-4-2" class="pilcrow">¶</a></p>
 <div id="ecn-and-accecn-transparency">
 <section id="section-4.1">
         <h3 id="name-ecn-and-accecn-transparency">
@@ -1414,7 +1412,7 @@ Furthermore, middleboxes <span class="bcp14">MUST NOT</span> strip, modify, or d
       <h2 id="name-security-considerations">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
-<p id="section-5-1">L4S introduces potential abuse vectors where applications mark queue-building traffic as low-latency. As described in Section 3.4, the baseband/modem subsystem <span class="bcp14">MUST</span> deploy queue protection mechanisms to defend the low-latency queue from starvation and latency degradation.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-1">L4S introduces potential abuse vectors where applications mark queue-building traffic as low-latency. As described in Section 3.5, the baseband/modem subsystem <span class="bcp14">MUST</span> deploy queue protection mechanisms to defend the low-latency queue from starvation and latency degradation.<a href="#section-5-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-considerations">

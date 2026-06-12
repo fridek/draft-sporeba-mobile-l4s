@@ -206,10 +206,20 @@ Table of Contents
 
    *  The modem SHOULD also support mapping to the low-latency queue
       based on the Non-Queue-Building (NQB) DSCP value (45) [RFC9956] as
-      an alternative or supplementary classifier.
+      an alternative or supplementary classifier.  Because DSCP markings
+      are frequently bleached at carrier interconnect boundaries, ECN
+      mapping remains the most reliable end-to-end classifier for mobile
+      networks.
 
-   *  TODO: Align this section with
-      [I-D.livingood-low-latency-deployment]
+   Link-layer networks MUST NOT attempt to dynamically classify packets
+   for the low-latency queue using heuristic traffic inference or Deep
+   Packet Inspection (DPI).  Classification MUST rely solely on the
+   explicit packet markings set by the application endpoints.  This
+   ensures compatibility with fully encrypted payloads and aligns with
+   the end-to-end principle and permissionless innovation, as discussed
+   in the ISP deployment observations in
+   [I-D.livingood-low-latency-deployment] (which also contains details
+   on Wi-Fi link-layer queuing considerations).
 
 3.4.  Uplink Active Queue Management (AQM)
 
@@ -253,7 +263,13 @@ Table of Contents
 
    Middleboxes include cellular core network elements (such as the UPF
    and PGW), firewalls, NATs, and deep packet inspection (DPI)
-   appliances.  TODO: Align with [I-D.livingood-low-latency-deployment]
+   appliances.
+
+   Middleboxes MUST NOT perform network-based classification or rewrite
+   ECN/DSCP markings based on traffic heuristics or DPI.  In accordance
+   with [I-D.livingood-low-latency-deployment], active classification
+   decisions MUST be left to the application endpoints, and middleboxes
+   MUST restrict their role to passive, transparent forwarding.
 
 4.1.  ECN and AccECN Transparency
 
@@ -272,7 +288,7 @@ Table of Contents
 5.  Security Considerations
 
    L4S introduces potential abuse vectors where applications mark queue-
-   building traffic as low-latency.  As described in Section 3.4, the
+   building traffic as low-latency.  As described in Section 3.5, the
    baseband/modem subsystem MUST deploy queue protection mechanisms to
    defend the low-latency queue from starvation and latency degradation.
 
