@@ -41,6 +41,7 @@ normative:
   RFC9956:
 
 informative:
+  I-D.livingood-low-latency-deployment:
 
 ...
 --- abstract
@@ -66,7 +67,7 @@ The host operating system controls application-level network access and hosts th
 
 ## TCP Accurate ECN (AccECN) and Fallback
 
-The host OS kernel TCP stack SHOULD support the Accurate Explicit Congestion Notification [RFC9768] and an L4S-compatible congestion control algorithm (e.g., TCP Prague).
+The host OS kernel TCP stack SHOULD support the Accurate Explicit Congestion Notification {{RFC9768}} and an L4S-compatible congestion control algorithm (e.g., TCP Prague).
 To defend against middleboxes that drop SYN packets containing ECN or AccECN options, the client TCP stack SHOULD implement a fallback mechanism: if the initial SYN packet containing ECN/AccECN options times out or is dropped, the stack SHOULD retransmit the SYN on the second attempt without ECN or AccECN options.
 
 
@@ -74,7 +75,7 @@ To defend against middleboxes that drop SYN packets containing ECN or AccECN opt
 
 To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, the OS MUST provide APIs that allow applications to:
 
-1. Set the ECN codepoint to `ECT(1)` [RFC9331] on outgoing packets.
+1. Set the ECN codepoint to `ECT(1)` {{RFC9331}} on outgoing packets.
 1. Read the ECN codepoints (specifically `CE` markings) of incoming packets.
 
 These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` and `IPV6_TCLASS` for setting, and `IP_RECVTOS` and `IPV6_RECVTCLASS` via ancillary data for reading) and MUST NOT be restricted by default security policies for standard application sockets.
@@ -109,8 +110,9 @@ The scheduler MUST prioritize the Low-Latency Queue, but SHOULD use a scheduling
 The link-layer MUST map uplink traffic to the low-latency queue based on ECN markings:
 
 *  Packets carrying the `ECT(1)` or `CE` bits in the IP header MUST be steered to the low-latency queue.
-*  The modem SHOULD also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) {{RFC9956}} as an alternative or supplementary classifier.
-*  TODO: Align this section with {{draft-livingood-low-latency-deployment}}
+*  The modem SHOULD also support mapping to the low-latency queue based on the Non-Queue-Building (NQB) DSCP value (45) {{RFC9956}} as an alternative or supplementary classifier. Because DSCP markings are frequently bleached at carrier interconnect boundaries, ECN mapping remains the most reliable end-to-end classifier for mobile networks.
+
+Link-layer networks MUST NOT attempt to dynamically classify packets for the low-latency queue using heuristic traffic inference or Deep Packet Inspection (DPI). Classification MUST rely solely on the explicit packet markings set by the application endpoints. This ensures compatibility with fully encrypted payloads and aligns with the end-to-end principle and permissionless innovation, as discussed in the ISP deployment observations in {{I-D.livingood-low-latency-deployment}} (which also contains details on Wi-Fi link-layer queuing considerations).
 
 
 ## Uplink Active Queue Management (AQM)
@@ -132,7 +134,8 @@ The modem MUST NOT modify the ECN bits, DSCP flags, or AccECN TCP options (172 a
 # Middlebox Requirements
 
 Middleboxes include cellular core network elements (such as the UPF and PGW), firewalls, NATs, and deep packet inspection (DPI) appliances.
-TODO: Align with {{draft-livingood-low-latency-deployment}}
+
+Middleboxes MUST NOT perform network-based classification or rewrite ECN/DSCP markings based on traffic heuristics or DPI. In accordance with {{I-D.livingood-low-latency-deployment}}, active classification decisions MUST be left to the application endpoints, and middleboxes MUST restrict their role to passive, transparent forwarding.
 
 ## ECN and AccECN Transparency
 Middleboxes MUST NOT clear (bleach) ECN bits. They MUST preserve `ECT(0)`, `ECT(1)`, and `CE` markings on all IP packets.
@@ -143,7 +146,7 @@ Middleboxes MUST transparently forward `SYN` and `SYN-ACK` packets that negotiat
 
 # Security Considerations
 
-L4S introduces potential abuse vectors where applications mark queue-building traffic as low-latency. As described in Section 3.4, the baseband/modem subsystem MUST deploy queue protection mechanisms to defend the low-latency queue from starvation and latency degradation.
+L4S introduces potential abuse vectors where applications mark queue-building traffic as low-latency. As described in Section 3.5, the baseband/modem subsystem MUST deploy queue protection mechanisms to defend the low-latency queue from starvation and latency degradation.
 
 # IANA Considerations
 
