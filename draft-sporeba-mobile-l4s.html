@@ -10,7 +10,7 @@
 <meta content="
        This document describes practical deployment considerations for Low Latency, Low Loss, and Scalable Throughput (L4S) in mobile networks. It defines the responsibilities of the host operating system, the link-layer (modem and WiFi) subsystems to ensure successful end-to-end low-latency communication. 
     " name="description">
-<meta content="xml2rfc 3.33.0" name="generator">
+<meta content="xml2rfc 3.34.0" name="generator">
 <meta content="L4S" name="keyword">
 <meta content="Mobile" name="keyword">
 <meta content="Cellular" name="keyword">
@@ -19,18 +19,19 @@
 <meta content="NQB" name="keyword">
 <meta content="draft-sporeba-mobile-l4s-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.33.0
-    Python 3.12.13
-    ConfigArgParse 1.7
+  xml2rfc 3.34.0
+    Python 3.13.12
+    ConfigArgParse 1.7.5
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
-    lxml 6.0.2
-    platformdirs 4.9.6
-    pycountry 24.6.1
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.10.0
+    pycountry 26.2.16
     PyYAML 6.0.3
-    requests 2.33.1
-    wcwidth 0.7.0
+    requests 2.34.2
+    wcwidth 0.8.1
 -->
 <link href="draft-sporeba-mobile-l4s.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1258,7 +1259,7 @@ appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">�
 <a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-tcp-accurate-ecn-accecn-and" class="section-name selfRef">TCP Accurate ECN (AccECN) and Fallback</a>
         </h3>
 <p id="section-2.1-1">The host OS kernel TCP stack <span class="bcp14">SHOULD</span> support the Accurate Explicit Congestion Notification <span>[<a href="#RFC9768" class="cite xref">RFC9768</a>]</span> and an L4S-compatible congestion control algorithm (e.g., TCP Prague).
-To defend against middleboxes that drop SYN packets containing ECN or AccECN options, the client TCP stack <span class="bcp14">SHOULD</span> implement a fallback mechanism: if the initial SYN packet containing ECN/AccECN options times out or is dropped, the stack <span class="bcp14">SHOULD</span> retransmit the SYN on the second attempt without ECN or AccECN options.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
+To defend against middleboxes that drop SYN packets containing ECN or AccECN options, the client TCP stack <span class="bcp14">SHOULD</span> implement a fallback mechanism: if the initial SYN packet containing ECN/AccECN options times out or is dropped, the stack <span class="bcp14">SHOULD</span> attempt to negotiate AccECN at least one more time on the first retransmission. If the first retransmission also fails to be acknowledged, subsequent retransmissions <span class="bcp14">SHOULD</span> fall back by clearing the ECN and AccECN options, as specified in Section 3.1.4.1 of <span>[<a href="#RFC9768" class="cite xref">RFC9768</a>]</span>.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="socket-apis-for-udp">
@@ -1392,7 +1393,7 @@ Some modem systems are known to already support high-priority and low-priority q
         <h3 id="name-ecn-and-accecn-transparency">
 <a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-ecn-and-accecn-transparency" class="section-name selfRef">ECN and AccECN Transparency</a>
         </h3>
-<p id="section-4.1-1">Middleboxes <span class="bcp14">MUST NOT</span> clear (bleach) ECN bits. They <span class="bcp14">MUST</span> preserve <code>ECT(0)</code>, <code>ECT(1)</code>, and <code>CE</code> markings on all IP packets.
+<p id="section-4.1-1">Middleboxes <span class="bcp14">MUST NOT</span> clear (bleach) ECN bits, in accordance with <span>[<a href="#RFC3168" class="cite xref">RFC3168</a>]</span>. They <span class="bcp14">MUST</span> preserve <code>ECT(0)</code>, <code>ECT(1)</code>, and <code>CE</code> markings on all IP packets.
 Furthermore, middleboxes <span class="bcp14">MUST NOT</span> strip, modify, or drop packets containing TCP options 172 or 174.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1436,6 +1437,10 @@ Furthermore, middleboxes <span class="bcp14">MUST NOT</span> strip, modify, or d
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC3168">[RFC3168]</dt>
+        <dd>
+<span class="refAuthor">Ramakrishnan, K.</span>, <span class="refAuthor">Floyd, S.</span>, and <span class="refAuthor">D. Black</span>, <span class="refTitle">"The Addition of Explicit Congestion Notification (ECN) to IP"</span>, <span class="seriesInfo">RFC 3168</span>, <span class="seriesInfo">DOI 10.17487/RFC3168</span>, <time datetime="2001-09" class="refDate">September 2001</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc3168">https://www.rfc-editor.org/rfc/rfc3168</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC3234">[RFC3234]</dt>
         <dd>

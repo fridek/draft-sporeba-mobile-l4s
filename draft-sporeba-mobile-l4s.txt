@@ -126,8 +126,11 @@ Table of Contents
    that drop SYN packets containing ECN or AccECN options, the client
    TCP stack SHOULD implement a fallback mechanism: if the initial SYN
    packet containing ECN/AccECN options times out or is dropped, the
-   stack SHOULD retransmit the SYN on the second attempt without ECN or
-   AccECN options.
+   stack SHOULD attempt to negotiate AccECN at least one more time on
+   the first retransmission.  If the first retransmission also fails to
+   be acknowledged, subsequent retransmissions SHOULD fall back by
+   clearing the ECN and AccECN options, as specified in Section 3.1.4.1
+   of [RFC9768].
 
 2.2.  Socket APIs for UDP
 
@@ -273,10 +276,10 @@ Table of Contents
 
 4.1.  ECN and AccECN Transparency
 
-   Middleboxes MUST NOT clear (bleach) ECN bits.  They MUST preserve
-   ECT(0), ECT(1), and CE markings on all IP packets.  Furthermore,
-   middleboxes MUST NOT strip, modify, or drop packets containing TCP
-   options 172 or 174.
+   Middleboxes MUST NOT clear (bleach) ECN bits, in accordance with
+   [RFC3168].  They MUST preserve ECT(0), ECT(1), and CE markings on all
+   IP packets.  Furthermore, middleboxes MUST NOT strip, modify, or drop
+   packets containing TCP options 172 or 174.
 
 4.2.  Handshake Forwarding
 
@@ -304,6 +307,11 @@ Table of Contents
               Requirement Levels", BCP 14, RFC 2119,
               DOI 10.17487/RFC2119, March 1997,
               <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC3168]  Ramakrishnan, K., Floyd, S., and D. Black, "The Addition
+              of Explicit Congestion Notification (ECN) to IP",
+              RFC 3168, DOI 10.17487/RFC3168, September 2001,
+              <https://www.rfc-editor.org/rfc/rfc3168>.
 
    [RFC3234]  Carpenter, B. and S. Brim, "Middleboxes: Taxonomy and
               Issues", RFC 3234, DOI 10.17487/RFC3234, February 2002,
