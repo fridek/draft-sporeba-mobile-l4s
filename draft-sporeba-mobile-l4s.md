@@ -80,7 +80,7 @@ These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` a
 
 To deploy receive-side L4S for TCP, host operating systems and link-layers must negotiate ECN support and verify path integrity. This process is divided into ECN negotiation on IP frames, and Accurate ECN option negotiation and drop detection.
 
-### Per-connection ECN Negotiation for TCP/IP frames
+### Per-connection ECN Negotiation for TCP/IP Frames
 
 Negotiation of ECN support for TCP follows the Classic ECN setup defined in {{RFC3168}} and recapped in Section 1.4 of {{RFC9768}}. This is based on the two ECN bits in the IP header (codepoints `ECT(0)`, `ECT(1)`, `CE`, and `Not-ECT`) and the ECN flags in the TCP header (AE, CWR, and ECE).
 
@@ -89,7 +89,7 @@ Negotiation of ECN support for TCP follows the Classic ECN setup defined in {{RF
 *  The client completes ECN negotiation on the final ACK. If ECN/AccECN support was successfully negotiated during the handshake, subsequent data packets MUST be sent with ECN bits set to `ECT(1)` in the IP header to request L4S treatment (Section 4.1 of {{RFC9331}}).
 *  To defend against faulty middleboxes that drop SYN packets containing ECN flags (Section 6.1.1.1 of {{RFC3168}}), the client TCP stack MUST implement a fallback mechanism: if the initial SYN times out, the client SHOULD retry the ECN-setup SYN at least once before falling back to sending subsequent SYNs with ECN flags cleared (AE,CWR,ECE) = (0,0,0) (Section 3.1.4.1 of {{RFC9768}}).
 
-### Per-connection AccECN Option Negotiation and option drop detection
+### Per-connection AccECN Option Negotiation and Option Drop Detection
 
 While basic ECN negotiation occurs via TCP flags, the Accurate ECN protocol utilizes the AccECN TCP Option (Kind 172 or 174) on data and ACK packets to feed back congestion counts (Section 3.2.3 of {{RFC9768}}). Because some network paths may drop packets containing unrecognized TCP options, host TCP stacks MUST implement active drop detection and option retransmission fallback:
 
@@ -102,7 +102,7 @@ While basic ECN negotiation occurs via TCP flags, the Accurate ECN protocol util
 
 ### Per-network detection and latency mitigation
 
-Latency can be critical to mobile applications, and fallback paths dependent on retransmissions and timeouts can lead to a degraded user experience in flows where L4S is blocked. A host system that wants to be resilient to this MAY attempt a connectivity check to a known, L4S-supporting service. In case of check failure, the result can be used to turn off L4S negotiation attempts for a given network, represented by PLMN/APN (in carrier networks) or BSSID (in Wi-Fi networks). Additionally, the host system MAY maintain additional L4S support disallowlists on a per-host, per-IP-range, or per-ASN basis. When maintaining such lists, entries should be retried after a preferred TTL (e.g., 7 days) and prefferably indexed per network to disambiguate between host and path support.
+Latency can be critical to mobile applications, and fallback paths dependent on retransmissions and timeouts can lead to a degraded user experience in flows where L4S is blocked. A host system that wants to be resilient to this MAY attempt a connectivity check to a known, L4S-supporting service. In case of check failure, the result can be used to turn off L4S negotiation attempts for a given network, represented by PLMN/APN (in carrier networks) or BSSID (in Wi-Fi networks). Additionally, the host system MAY maintain additional L4S support disallowlists on a per-host, per-IP-range, or per-ASN basis. When maintaining such lists, entries should be retried after a preferred TTL (e.g., 7 days) and preferably indexed per network to disambiguate between host and path support.
 
 # Link-layer Subsystems Requirements
 
