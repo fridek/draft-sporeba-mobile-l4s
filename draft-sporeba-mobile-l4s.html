@@ -10,7 +10,7 @@
 <meta content="
        This document describes practical deployment considerations for Low Latency, Low Loss, and Scalable Throughput (L4S) in mobile networks. It defines the responsibilities of the host operating system, the link-layer (modem and WiFi) subsystems to ensure successful end-to-end low-latency communication. 
     " name="description">
-<meta content="xml2rfc 3.33.0" name="generator">
+<meta content="xml2rfc 3.34.0" name="generator">
 <meta content="L4S" name="keyword">
 <meta content="Mobile" name="keyword">
 <meta content="Cellular" name="keyword">
@@ -19,18 +19,19 @@
 <meta content="NQB" name="keyword">
 <meta content="draft-sporeba-mobile-l4s-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.33.0
-    Python 3.12.13
-    ConfigArgParse 1.7
+  xml2rfc 3.34.0
+    Python 3.13.12
+    ConfigArgParse 1.7.5
     google-i18n-address 3.1.1
     intervaltree 3.2.1
     Jinja2 3.1.6
-    lxml 6.0.2
-    platformdirs 4.9.6
-    pycountry 24.6.1
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.10.0
+    pycountry 26.2.16
     PyYAML 6.0.3
-    requests 2.33.1
-    wcwidth 0.7.0
+    requests 2.34.2
+    wcwidth 0.8.1
 -->
 <link href="draft-sporeba-mobile-l4s.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1053,7 +1054,7 @@ svg {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Poreba &amp; Colitti</td>
-<td class="center">Expires 14 December 2026</td>
+<td class="center">Expires 18 December 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1066,12 +1067,12 @@ svg {
 <dd class="internet-draft">draft-sporeba-mobile-l4s-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2026-06-12" class="published">12 June 2026</time>
+<time datetime="2026-06-16" class="published">16 June 2026</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Best Current Practice</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-12-14">14 December 2026</time></dd>
+<dd class="expires"><time datetime="2026-12-18">18 December 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1120,7 +1121,7 @@ svg {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 14 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 18 December 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1164,7 +1165,10 @@ svg {
                 <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-tcp-accurate-ecn-accecn-and" class="internal xref">TCP Accurate ECN (AccECN) and Fallback</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
-                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-socket-apis-for-udp" class="internal xref">Socket APIs for UDP</a></p>
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-accecn-path-traversal-and-o" class="internal xref">AccECN Path Traversal and Option Handling</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.3">
+                <p id="section-toc.1-1.2.2.3.1"><a href="#section-2.3" class="auto internal xref">2.3</a>.  <a href="#name-socket-apis-for-udp" class="internal xref">Socket APIs for UDP</a></p>
 </li>
             </ul>
 </li>
@@ -1261,21 +1265,44 @@ appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">�
 To defend against middleboxes that drop SYN packets containing ECN or AccECN options, the client TCP stack <span class="bcp14">SHOULD</span> implement a fallback mechanism: if the initial SYN packet containing ECN/AccECN options times out or is dropped, the stack <span class="bcp14">SHOULD</span> attempt to negotiate AccECN at least one more time on the first retransmission. If the first retransmission also fails to be acknowledged, subsequent retransmissions <span class="bcp14">SHOULD</span> fall back by clearing the ECN and AccECN options, as specified in Section 3.1.4.1 of <span>[<a href="#RFC9768" class="cite xref">RFC9768</a>]</span>.<a href="#section-2.1-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="socket-apis-for-udp">
+<div id="accecn-path-traversal-and-option-handling">
 <section id="section-2.2">
-        <h3 id="name-socket-apis-for-udp">
-<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-socket-apis-for-udp" class="section-name selfRef">Socket APIs for UDP</a>
+        <h3 id="name-accecn-path-traversal-and-o">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-accecn-path-traversal-and-o" class="section-name selfRef">AccECN Path Traversal and Option Handling</a>
         </h3>
-<p id="section-2.2-1">To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, the OS <span class="bcp14">MUST</span> provide APIs that allow applications to:<a href="#section-2.2-1" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-2.2-2">
-<li id="section-2.2-2.1">
-            <p id="section-2.2-2.1.1">Set the ECN codepoint to <code>ECT(1)</code> <span>[<a href="#RFC9331" class="cite xref">RFC9331</a>]</span> on outgoing packets.<a href="#section-2.2-2.1.1" class="pilcrow">¶</a></p>
+<p id="section-2.2-1">During the TCP three-way handshake, AccECN capability is negotiated solely using TCP header flags (the AE, CWR, and ECE flags in the SYN and SYN/ACK), as specified in Section 3.1 of <span>[<a href="#RFC9768" class="cite xref">RFC9768</a>]</span>. However, once the connection is established, Detailed Feedback is exchanged using the AccECN TCP Option (Kind 172 or 174).<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">Because some network paths may block, drop, or strip packets containing unrecognized TCP options, host OS TCP stacks <span class="bcp14">MUST</span> implement the following path traversal and fallback mechanisms:<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2.2-3.1">
+            <p id="section-2.2-3.1.1"><strong>Detection during Handshake</strong>: If a TCP Server sends a SYN/ACK containing the AccECN option and does not receive an ACK (either due to packet loss or middlebox blocking), the server <span class="bcp14">SHOULD</span> retransmit the SYN/ACK without the AccECN option on the first retry. If this retransmission also times out, the server <span class="bcp14">SHOULD</span> retransmit the SYN/ACK with ECN flags cleared (AE,CWR,ECE) = (0,0,0) and no option, as specified in Section 3.2.3.2.2 of <span>[<a href="#RFC9768" class="cite xref">RFC9768</a>]</span>.<a href="#section-2.2-3.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li id="section-2.2-2.2">
-            <p id="section-2.2-2.2.1">Read the ECN codepoints (specifically <code>CE</code> markings) of incoming packets.<a href="#section-2.2-2.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-2.2-3.2">
+            <p id="section-2.2-3.2.1"><strong>Option Traversal Monitoring</strong>: The host TCP stack <span class="bcp14">MUST</span> actively monitor the traversal of packets containing the AccECN option. If the stack detects a high drop rate on packets carrying the option compared to optionless packets, it <span class="bcp14">MUST</span> disable the use of the AccECN option for the remainder of the half-connection (falling back to the TCP header <code>ACE</code> field for ECN feedback).<a href="#section-2.2-3.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.2-3.3">
+            <p id="section-2.2-3.3.1"><strong>AccECN Option Usage</strong>: The host TCP stack <span class="bcp14">MUST NOT</span> include the AccECN option on every segment. The option <span class="bcp14">SHOULD</span> only be included on scheduled ACKs when one or more byte counters have changed since the previous ACK (Section 3.2.3.3 of <span>[<a href="#RFC9768" class="cite xref">RFC9768</a>]</span>). If the available TCP option space is constrained (e.g., due to SACK options for packet loss, which <span class="bcp14">MUST</span> take priority), the AccECN option <span class="bcp14">MUST</span> be truncated or omitted entirely.<a href="#section-2.2-3.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-2.2-3.4">
+            <p id="section-2.2-3.4.1"><strong>Fallback to Header Flags</strong>: When the AccECN option is stripped or disabled due to detected drops, ECN feedback continues to operate gracefully using only the standard 3-bit <code>ACE</code> field in the TCP header flags. Senders <span class="bcp14">MUST</span> be capable of extracting ECN feedback from the <code>ACE</code> field using the packet-to-byte estimation algorithm defined in Appendix A.3 of <span>[<a href="#RFC9768" class="cite xref">RFC9768</a>]</span>.<a href="#section-2.2-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="socket-apis-for-udp">
+<section id="section-2.3">
+        <h3 id="name-socket-apis-for-udp">
+<a href="#section-2.3" class="section-number selfRef">2.3. </a><a href="#name-socket-apis-for-udp" class="section-name selfRef">Socket APIs for UDP</a>
+        </h3>
+<p id="section-2.3-1">To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, the OS <span class="bcp14">MUST</span> provide APIs that allow applications to:<a href="#section-2.3-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-2.3-2">
+<li id="section-2.3-2.1">
+            <p id="section-2.3-2.1.1">Set the ECN codepoint to <code>ECT(1)</code> <span>[<a href="#RFC9331" class="cite xref">RFC9331</a>]</span> on outgoing packets.<a href="#section-2.3-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-2.3-2.2">
+            <p id="section-2.3-2.2.1">Read the ECN codepoints (specifically <code>CE</code> markings) of incoming packets.<a href="#section-2.3-2.2.1" class="pilcrow">¶</a></p>
 </li>
         </ol>
-<p id="section-2.2-3">These capabilities <span class="bcp14">MUST</span> be exposed via standard socket options (e.g., <code>IP_TOS</code> and <code>IPV6_TCLASS</code> for setting, and <code>IP_RECVTOS</code> and <code>IPV6_RECVTCLASS</code> via ancillary data for reading) and <span class="bcp14">MUST NOT</span> be restricted by default security policies for standard application sockets.<a href="#section-2.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.3-3">These capabilities <span class="bcp14">MUST</span> be exposed via standard socket options (e.g., <code>IP_TOS</code> and <code>IPV6_TCLASS</code> for setting, and <code>IP_RECVTOS</code> and <code>IPV6_RECVTCLASS</code> via ancillary data for reading) and <span class="bcp14">MUST NOT</span> be restricted by default security policies for standard application sockets.<a href="#section-2.3-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
