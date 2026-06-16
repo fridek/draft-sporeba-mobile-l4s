@@ -76,9 +76,9 @@ To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, t
 
 These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` and `IPV6_TCLASS` for setting, and `IP_RECVTOS` and `IPV6_RECVTCLASS` via ancillary data for reading) and MUST NOT be restricted by default security policies for standard application sockets.
 
-## TCP support detection and receive-side bootstrapping
+## TCP support detection and bootstrapping
 
-To deploy receive-side L4S for TCP, host operating systems and link-layers must negotiate ECN support and verify path integrity. This process is divided into ECN negotiation on IP frames, and Accurate ECN option negotiation and drop detection.
+To deploy L4S for TCP, host operating systems and link-layers must negotiate ECN support and verify path integrity. This process is divided into ECN negotiation on IP frames, and Accurate ECN option negotiation and drop detection.
 
 ### Per-connection ECN Negotiation for TCP/IP Frames
 
@@ -119,7 +119,7 @@ L4S-aware protocol stacks MUST be prepared to receive out-of-order packets.
 Link-layers MUST NOT buffer inbound packets in a way that imposes measurable latency to the protocol stack.
 
 ## Multi-Queue Scheduling and Bounded Latency
-Any link layer that supports L4S MUST support a low-latency queue designated for Non-Queue-Building {{RFC9956}} traffic. This queue MUST be bounded as described in section 3.4.
+Any link layer that supports L4S MUST support a low-latency queue designated for Non-Queue-Building {{RFC9956}} traffic. This queue MUST be bounded as described in Section 3.4 and Section 3.5.
 Some modem systems are known to already support high-priority and low-priority queues. These queues are typically not latency-bounded, so in the presence of such queues, low-latency queue MUST be distinct from them. An example configuration might be:
 
 
