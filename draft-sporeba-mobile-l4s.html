@@ -1165,7 +1165,7 @@ svg {
                 <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-socket-apis-for-udp" class="internal xref">Socket APIs for UDP</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
-                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-tcp-support-detection-and-r" class="internal xref">TCP support detection and receive-side bootstrapping</a></p>
+                <p id="section-toc.1-1.2.2.2.1"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-tcp-support-detection-and-b" class="internal xref">TCP support detection and bootstrapping</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2.2.1">
                     <p id="section-toc.1-1.2.2.2.2.1.1"><a href="#section-2.2.1" class="auto internal xref">2.2.1</a>.  <a href="#name-per-connection-ecn-negotiat" class="internal xref">Per-connection ECN Negotiation for TCP/IP Frames</a></p>
@@ -1281,12 +1281,12 @@ appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">�
 <p id="section-2.1-3">These capabilities <span class="bcp14">MUST</span> be exposed via standard socket options (e.g., <code>IP_TOS</code> and <code>IPV6_TCLASS</code> for setting, and <code>IP_RECVTOS</code> and <code>IPV6_RECVTCLASS</code> via ancillary data for reading) and <span class="bcp14">MUST NOT</span> be restricted by default security policies for standard application sockets.<a href="#section-2.1-3" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="tcp-support-detection-and-receive-side-bootstrapping">
+<div id="tcp-support-detection-and-bootstrapping">
 <section id="section-2.2">
-        <h3 id="name-tcp-support-detection-and-r">
-<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-tcp-support-detection-and-r" class="section-name selfRef">TCP support detection and receive-side bootstrapping</a>
+        <h3 id="name-tcp-support-detection-and-b">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-tcp-support-detection-and-b" class="section-name selfRef">TCP support detection and bootstrapping</a>
         </h3>
-<p id="section-2.2-1">To deploy receive-side L4S for TCP, host operating systems and link-layers must negotiate ECN support and verify path integrity. This process is divided into ECN negotiation on IP frames, and Accurate ECN option negotiation and drop detection.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-1">To deploy L4S for TCP, host operating systems and link-layers must negotiate ECN support and verify path integrity. This process is divided into ECN negotiation on IP frames, and Accurate ECN option negotiation and drop detection.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
 <div id="per-connection-ecn-negotiation-for-tcpip-frames">
 <section id="section-2.2.1">
           <h4 id="name-per-connection-ecn-negotiat">
@@ -1371,7 +1371,7 @@ appear in all capitals, as shown here.<a href="#section-1.1-1" class="pilcrow">�
         <h3 id="name-multi-queue-scheduling-and-">
 <a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-multi-queue-scheduling-and-" class="section-name selfRef">Multi-Queue Scheduling and Bounded Latency</a>
         </h3>
-<p id="section-3.2-1">Any link layer that supports L4S <span class="bcp14">MUST</span> support a low-latency queue designated for Non-Queue-Building <span>[<a href="#RFC9956" class="cite xref">RFC9956</a>]</span> traffic. This queue <span class="bcp14">MUST</span> be bounded as described in section 3.4.
+<p id="section-3.2-1">Any link layer that supports L4S <span class="bcp14">MUST</span> support a low-latency queue designated for Non-Queue-Building <span>[<a href="#RFC9956" class="cite xref">RFC9956</a>]</span> traffic. This queue <span class="bcp14">MUST</span> be bounded as described in Section 3.4 and Section 3.5.
 Some modem systems are known to already support high-priority and low-priority queues. These queues are typically not latency-bounded, so in the presence of such queues, low-latency queue <span class="bcp14">MUST</span> be distinct from them. An example configuration might be:<a href="#section-3.2-1" class="pilcrow">¶</a></p>
 <ul class="normal">
 <li class="normal" id="section-3.2-2.1">

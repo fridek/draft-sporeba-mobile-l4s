@@ -68,7 +68,7 @@ Table of Contents
      1.1.  Conventions and Definitions
    2.  Host Operating System Requirements
      2.1.  Socket APIs for UDP
-     2.2.  TCP support detection and receive-side bootstrapping
+     2.2.  TCP support detection and bootstrapping
        2.2.1.  Per-connection ECN Negotiation for TCP/IP Frames
        2.2.2.  Per-connection AccECN Option Negotiation and Option
                Drop Detection
@@ -138,12 +138,12 @@ Table of Contents
    restricted by default security policies for standard application
    sockets.
 
-2.2.  TCP support detection and receive-side bootstrapping
+2.2.  TCP support detection and bootstrapping
 
-   To deploy receive-side L4S for TCP, host operating systems and link-
-   layers must negotiate ECN support and verify path integrity.  This
-   process is divided into ECN negotiation on IP frames, and Accurate
-   ECN option negotiation and drop detection.
+   To deploy L4S for TCP, host operating systems and link-layers must
+   negotiate ECN support and verify path integrity.  This process is
+   divided into ECN negotiation on IP frames, and Accurate ECN option
+   negotiation and drop detection.
 
 2.2.1.  Per-connection ECN Negotiation for TCP/IP Frames
 
@@ -278,11 +278,11 @@ Table of Contents
 
    Any link layer that supports L4S MUST support a low-latency queue
    designated for Non-Queue-Building [RFC9956] traffic.  This queue MUST
-   be bounded as described in section 3.4.  Some modem systems are known
-   to already support high-priority and low-priority queues.  These
-   queues are typically not latency-bounded, so in the presence of such
-   queues, low-latency queue MUST be distinct from them.  An example
-   configuration might be:
+   be bounded as described in Section 3.4 and Section 3.5.  Some modem
+   systems are known to already support high-priority and low-priority
+   queues.  These queues are typically not latency-bounded, so in the
+   presence of such queues, low-latency queue MUST be distinct from
+   them.  An example configuration might be:
 
    *  *L4S/Low-Latency Queue:* For ECT(1) and DSCP-45 marked traffic.
 
