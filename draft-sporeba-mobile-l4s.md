@@ -67,9 +67,18 @@ Deploying L4S in a mobile ecosystem requires co-operation across multiple layers
 
 The host operating system controls application-level network access and hosts the primary TCP and UDP transport stacks.
 
-## L4S support detection and bootstrapping
+## Socket APIs for UDP
 
-To deploy L4S, host operating systems and link-layers must negotiate ECN support and verify path integrity. This process is divided into ECN negotiation on IP frames, and Accurate ECN option negotiation and drop detection.
+To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, the OS MUST provide APIs that allow applications to:
+
+1. Set the ECN codepoint to `ECT(1)` {{RFC9331}} on outgoing packets.
+1. Read the ECN codepoints (specifically `CE` markings) of incoming packets.
+
+These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` and `IPV6_TCLASS` for setting, and `IP_RECVTOS` and `IPV6_RECVTCLASS` via ancillary data for reading) and MUST NOT be restricted by default security policies for standard application sockets.
+
+## TCP support detection and receive-side bootstrapping
+
+To deploy receive-side L4S for TCP, host operating systems and link-layers must negotiate ECN support and verify path integrity. This process is divided into ECN negotiation on IP frames, and Accurate ECN option negotiation and drop detection.
 
 ### Per-connection ECN Negotiation for TCP/IP frames
 
@@ -80,7 +89,7 @@ Negotiation of ECN support for TCP follows the Classic ECN setup defined in {{RF
 *  The client completes ECN negotiation on the final ACK. If ECN/AccECN support was successfully negotiated during the handshake, subsequent data packets MUST be sent with ECN bits set to `ECT(1)` in the IP header to request L4S treatment (Section 4.1 of {{RFC9331}}).
 *  To defend against faulty middleboxes that drop SYN packets containing ECN flags (Section 6.1.1.1 of {{RFC3168}}), the client TCP stack MUST implement a fallback mechanism: if the initial SYN times out, the client SHOULD retry the ECN-setup SYN at least once before falling back to sending subsequent SYNs with ECN flags cleared (AE,CWR,ECE) = (0,0,0) (Section 3.1.4.1 of {{RFC9768}}).
 
-### AccECN Option Negotiation and Option Drop Detection
+### Per-connection AccECN Option Negotiation and option drop detection
 
 While basic ECN negotiation occurs via TCP flags, the Accurate ECN protocol utilizes the AccECN TCP Option (Kind 172 or 174) on data and ACK packets to feed back congestion counts (Section 3.2.3 of {{RFC9768}}). Because some network paths may drop packets containing unrecognized TCP options, host TCP stacks MUST implement active drop detection and option retransmission fallback:
 
@@ -91,19 +100,9 @@ While basic ECN negotiation occurs via TCP flags, the Accurate ECN protocol util
 *  The AccECN TCP option MUST NOT be sent on every packet. The option SHOULD only be included on scheduled ACKs when ECN byte counters have incremented since the last ACK (Section 3.2.3.3 of {{RFC9768}}). Furthermore, standard TCP options like SACK blocks (for loss recovery) MUST take precedence over the AccECN option; if option space is constrained, the AccECN option MUST be truncated or omitted.
 *  When the AccECN option is stripped or disabled due to detected drops, ECN feedback continues to operate gracefully using only the standard 3-bit `ACE` field in the TCP header flags. Senders MUST be capable of extracting ECN feedback from the `ACE` field using the packet-to-byte estimation algorithm defined in Appendix A.3 of {{RFC9768}}.
 
-### Implications on mobile networks
+### Per-network detection and latency mitigation
 
-Latency can be critical to mobile applications, and fallback paths dependent purely on retransmissions and timeouts can lead to a degraded user experience in scenarios where L4S is blocked. A host system that wants to be resilient to this MAY attempt a connectivity check to a known, L4S-supporting service. In case of check failure, the result can be used to turn off L4S negotiation attempts for a given network, represented by PLMN/APN (in carrier networks) or BSSID (in Wi-Fi networks). Additionally, the host system MAY maintain additional support disallowlists on a per-host, per-IP-range, or per-ASN basis. When maintaining such lists, entries should be retried after a preferred TTL (e.g., 7 days) and, if possible, indexed per network.
-
-
-## Socket APIs for UDP
-
-To enable userspace transport stacks (such as QUIC and WebRTC) to utilize L4S, the OS MUST provide APIs that allow applications to:
-
-1. Set the ECN codepoint to `ECT(1)` {{RFC9331}} on outgoing packets.
-1. Read the ECN codepoints (specifically `CE` markings) of incoming packets.
-
-These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` and `IPV6_TCLASS` for setting, and `IP_RECVTOS` and `IPV6_RECVTCLASS` via ancillary data for reading) and MUST NOT be restricted by default security policies for standard application sockets.
+Latency can be critical to mobile applications, and fallback paths dependent on retransmissions and timeouts can lead to a degraded user experience in flows where L4S is blocked. A host system that wants to be resilient to this MAY attempt a connectivity check to a known, L4S-supporting service. In case of check failure, the result can be used to turn off L4S negotiation attempts for a given network, represented by PLMN/APN (in carrier networks) or BSSID (in Wi-Fi networks). Additionally, the host system MAY maintain additional L4S support disallowlists on a per-host, per-IP-range, or per-ASN basis. When maintaining such lists, entries should be retried after a preferred TTL (e.g., 7 days) and prefferably indexed per network to disambiguate between host and path support.
 
 # Link-layer Subsystems Requirements
 
