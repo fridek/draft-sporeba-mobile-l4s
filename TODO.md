@@ -12,6 +12,15 @@ This document contains a list of suggested improvements, RFC alignments, and tec
 *   **Topic**: Standardizing ECN feedback for RTP-based real-time interactive media streams.
 *   **Suggestion**: Align UDP requirements with **RFC 8888** ("RTP Control Protocol (RTCP) Feedback for Congestion Control on Interactive Real-Time Media"), recommending that interactive media applications use the RFC 8888 feedback format to echo ECN CE markings back to the sender.
 
+### ECN/L4S Path Capability Caching Granularity
+*   **Topic**: Caching path ECN capabilities and AccECN Option blocking behaviors at the host OS level to optimize connection bootstrapping and avoid timeout fallback penalties.
+*   **Suggestion**: Recommend that host OS TCP stacks implement a hybrid cache to store ECN/L4S path support, using the following granularities:
+    *   **Local Interface ID**:
+        *   *Wi-Fi*: Keyed on the Access Point's physical MAC address (**BSSID**), as SSID is too coarse and does not uniquely identify the local queue and ISP router.
+        *   *Cellular*: Keyed on the carrier network (**PLMN** - MCC+MNC) combined with the active Radio Access Technology (**RAT** - e.g., LTE vs 5G), as middlebox option-blocking policies are carrier-wide.
+    *   **Destination Host**: Keyed on the **Destination IP Subnet** (e.g., `/24` for IPv4 or `/48` for IPv6) rather than individual host IPs, to accommodate CDN/load-balancer rotation while caching the path bottleneck properties.
+    *   **Expiry**: Cached capability status MUST age-out after a reasonable duration (e.g., 24 hours) to account for interface roaming and network upgrades.
+
 ---
 
 ## 2. Link-Layer Subsystems Requirements (Modem & Wi-Fi)
@@ -39,3 +48,18 @@ This document contains a list of suggested improvements, RFC alignments, and tec
 ### NQB Marking Demotion at Carrier Ingress Boundaries
 *   **Topic**: Handling DSCP-45 traffic in carrier networks that do not support NQB queue protection.
 *   **Suggestion**: Recommend that ingress nodes (UPFs/PGWs) that lack queue protection capabilities demote unrecognized `DSCP-45` traffic to `DSCP-0` (Best Effort) rather than dropping the packets, to maintain robust backward compatibility.
+
+---
+
+## 4. Path Traversal & Option Blocking Scenarios
+
+### Detailed Handling of AccECN Option Dropping (Blackholing)
+*   **Topic**: Middleboxes that drop/blackhole packets containing unrecognized TCP Option Kind 172/174, rather than just stripping them.
+*   **Suggestion**: Ensure the BCP explicitly details how host OS stacks must handle option blackholing across all connection phases:
+    *   *SYN/ACK Option Drop*: Retransmitting the SYN/ACK without the AccECN option on first timeout, and fallback to non-AccECN handshake on subsequent timeouts.
+    *   *Data Segment Option Drop*: Retransmitting the data segment without the option on timeout.
+    *   *Pure ACK Option Drop*: Detecting ACK loss (via unexpected sender data retransmissions) and disabling option usage on subsequent ACKs.
+
+### Header Flags Mangling and Zeroing (ECN-Silence)
+*   **Topic**: Middleboxes that zero out the ECN bits in the IP header or the ECN flags (AE, CWR, ECE) in the TCP header, creating "ECN-Silence".
+*   **Suggestion**: Detail host OS safety behavior when feedback is zeroed out: the sender receives no CE marks, which leads to buffer overflow and packet drops at the bottleneck. The sender MUST react to these packet drops with a standard, safe Classic ECN/Reno response (maintaining connection survival).
