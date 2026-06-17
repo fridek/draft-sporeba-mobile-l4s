@@ -63,3 +63,8 @@ This document contains a list of suggested improvements, RFC alignments, and tec
 ### Header Flags Mangling and Zeroing (ECN-Silence)
 *   **Topic**: Middleboxes that zero out the ECN bits in the IP header or the ECN flags (AE, CWR, ECE) in the TCP header, creating "ECN-Silence".
 *   **Suggestion**: Detail host OS safety behavior when feedback is zeroed out: the sender receives no CE marks, which leads to buffer overflow and packet drops at the bottleneck. The sender MUST react to these packet drops with a standard, safe Classic ECN/Reno response (maintaining connection survival).
+
+## 5. Wed 17 June review
+
+*   "receive-side L4S for TCP" should be renamed to be consistent with RFC 9330
+
