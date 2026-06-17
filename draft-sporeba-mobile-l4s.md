@@ -79,15 +79,15 @@ These capabilities MUST be exposed via standard socket options (e.g., `IP_TOS` a
 
 To deploy receive-side L4S for TCP, host operating systems and link-layers must negotiate ECN support and verify path integrity.
 
-A client that wants to be resilient to networks that don't support L4S MUST follow the negotiation steps described in {{RFC3168}}, {{RFC8311}}, {{RFC9331} and {{RFC9768}}}
+A client that wants to be resilient to networks that don't support L4S MUST follow the negotiation steps described in {{RFC3168}}, {{RFC8311}}, {{RFC9331}}, and {{RFC9768}}
 Negotiation of ECN support for TCP follows the Classic ECN setup defined in Section 6.1.1 {{RFC3168}} and recapped in Section 1.4 of {{RFC9768}}.
 Negotiation of AccECN support is defined in Section 3.1 of {{RFC9768}}
 
-These negotations MUST include the retry mechanisms as described by Section 3.1.4 of and Section 3.2.3.2.2 of {{RFC9768}}.
+These negotiations MUST include the retry mechanisms described in Section 3.1.4 and Section 3.2.3.2.2 of {{RFC9768}}.
 
 ### Per-network detection and latency mitigation
 
-Latency can be critical to mobile applications, and fallback paths dependent on retransmissions and timeouts can lead to a degraded user experience in flows where L4S fails to be negotiated in any of the steps listed in 2.2.1. A host system that wants to be resilient to this MAY attempt a connectivity check to a known, L4S-supporting service. In case of check failure, the result can be used to turn off L4S negotiation attempts for a given network, represented by PLMN/APN (in carrier networks) or BSSID (in Wi-Fi networks). Additionally, the host system MAY maintain additional L4S support cache on a per-host or per-IP-address, or other basis. When maintaining such lists, entries should be retired after a preferred TTL (e.g., 7 days) and preferably indexed per network to disambiguate between host and path L4S support.
+Latency can be critical to mobile applications, and fallback paths dependent on retransmissions and timeouts can lead to a degraded user experience in flows where L4S fails to be negotiated in any of the steps listed in Section 2.2. A host system that wants to be resilient to this MAY attempt a connectivity check to a known, L4S-supporting service. In case of check failure, the result can be used to turn off L4S negotiation attempts for a given network, represented by PLMN/APN (in carrier networks) or BSSID (in Wi-Fi networks). Additionally, the host system MAY maintain additional L4S support cache on a per-host or per-IP-address, or other basis. When maintaining such lists, entries should be retired after a preferred TTL (e.g., 7 days) and preferably indexed per network to disambiguate between host and path L4S support.
 
 # Link-layer Subsystems Requirements
 
