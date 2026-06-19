@@ -1,3 +1,5 @@
+export UPLOAD_EMAIL ?= sebastian@poreba.me
+
 LIBDIR := lib
 -include $(LIBDIR)/main.mk
 
