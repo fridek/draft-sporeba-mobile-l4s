@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-21T01:17:25.905229+00:00",
+  "timestamp": "2026-06-23T01:03:38.378582+00:00",
   "repo": "fridek/draft-sporeba-mobile-l4s",
   "labels": [
     {
@@ -50,5 +50,32 @@
     }
   ],
   "issues": [],
-  "pulls": []
+  "pulls": [
+    {
+      "number": 1,
+      "id": "PR_kwDOS2kUfc7pRn4J",
+      "title": "Add transport feedback requirements (RFC9768 and RFC6679)",
+      "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/pull/1",
+      "state": "OPEN",
+      "author": "Irlanki",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "Added a new subsection (## Transport-Layer Congestion Feedback Requirements) under the Host OS section.\r\n\r\nThis addresses endpoint pseudo-L4S deployments by strictly requiring active, protocol-compliant congestion loop closure. ",
+      "createdAt": "2026-06-22T16:40:32Z",
+      "updatedAt": "2026-06-22T16:40:33Z",
+      "baseRepository": "fridek/draft-sporeba-mobile-l4s",
+      "baseRefName": "main",
+      "baseRefOid": "c2af5c97eb0ae3342da181481b09a04f1615c270",
+      "headRepository": "fridek/draft-sporeba-mobile-l4s",
+      "headRefName": "feature/transport-feedback-requirements",
+      "headRefOid": "44f9a9b550668f20ef5a64cc1f8ee8eed7d1c2c9",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
+    }
+  ]
 }
