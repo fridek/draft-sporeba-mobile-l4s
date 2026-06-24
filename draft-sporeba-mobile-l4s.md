@@ -160,14 +160,16 @@ Middleboxes MUST transparently forward `SYN` and `SYN-ACK` packets that negotiat
 
 ## Mitigation Against Non-Compliant Prioritization
 
-Network infrastructure nodes MUST NOT act on `ECT(1)` flags to prioritize traffic in alternative, non-compliant ways unless a valid end-to-end loop is actively maintained—where the network nodes execute compliant congestion marking and the transport endpoints record and reflect those markings in line with {{RFC9768}}.
+Network infrastructure nodes MUST NOT act on `ECT(1)` flags to prioritize traffic in alternative, non-compliant ways unless a valid end-to-end loop is actively maintained—where the network nodes execute compliant congestion marking and the transport endpoints record and reflect those markings in line with the transport-specific requirements specified in Section 4.2 of {{RFC9331}}.
 
 Modern network deployments MUST NOT be marketed or operated as supporting L4S if they prioritize traffic via alternative heuristics (such as bandwidth allocation multipliers) without enforcing or verifying true, end-to-end transport-layer feedback loop compliance.
 
-To ensure a compliant L4S deployment, the associated end-to-end transport loops MUST behave as follows:
+To ensure a compliant L4S deployment, the associated end-to-end transport loops MUST conform to the baseline protocol prerequisites (including, but not limited to, the following core implementations):
 
-* **TCP Transports:** As specified in Section 4 of {{RFC9331}}, an L4S-compliant TCP transport stack MUST utilize Accurate ECN (AccECN) feedback. The receiver MUST process and reflect congestion markings back to the sender using the 3-bit Accurate ECN (ACE) field in the TCP header as specified in Section 3.2.2 of {{RFC9768}}. The implementation MAY also support the AccECN TCP Options specified in Section 3.2.3 of {{RFC9768}}.
-* **UDP-Based Real-Time Transports:** Applications or media frameworks utilizing RTP over UDP (such as WebRTC implementations) MUST implement the feedback mechanisms specified in {{RFC6679}}. The receiver MUST generate and transmit the RTP/AVPF ECN feedback packet format specified in Section 5.1 of {{RFC6679}} back to the sender, and send the RTCP XR summary report block specified in Section 5.2 of {{RFC6679}}.
+* **TCP Transports:** MUST utilize Accurate ECN (AccECN) feedback loop mechanics, processing and reflecting congestion markings using the 3-bit Accurate ECN (ACE) field in the TCP header as specified in Section 3.2.2 of {{RFC9768}}. The implementation MAY also support the AccECN TCP Options specified in Section 3.2.3 of {{RFC9768}}.
+* **UDP-Based Real-Time Transports:** Applications or media frameworks utilizing RTP over UDP (such as WebRTC implementations) MUST implement high-fidelity feedback loops utilizing the per-RTP packet congestion control feedback report format specified in Section 3.1 of {{RFC8888}} alongside the session negotiation and signaling parameters specified in {{RFC6679}}. The receiver MUST generate and transmit the RTP/AVPF ECN feedback packet format specified in Section 5.1 of {{RFC6679}} back to the sender, and send the RTCP XR summary report block specified in Section 5.2 of {{RFC6679}}.
+* **QUIC Transports:** MUST utilize the native, fine-grained ECN feedback loops built into the IETF QUIC transport protocol layer as specified in {{RFC9000}}.
+* **Other Transport Protocols:** Other transport layers (such as SCTP or DCCP) MUST utilize a fine-grained, protocol-compliant feedback loop mechanism capable of accurately reporting the extent of congestion markings back to the sender as specified in Section 4.2 of {{RFC9331}}.
 
 # Security Considerations
 
