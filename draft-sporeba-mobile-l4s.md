@@ -94,15 +94,6 @@ These negotiations MUST include the retry mechanisms described in Section 3.1.4 
 
 Latency can be critical to mobile applications, and fallback paths dependent on retransmissions and timeouts can lead to a degraded user experience in flows where L4S fails to be negotiated in any of the steps listed in Section 2.2. A host system that wants to be resilient to this MAY attempt a connectivity check to a known, L4S-supporting service. In case of check failure, the result can be used to turn off L4S negotiation attempts for a given network, represented by PLMN/APN (in carrier networks) or BSSID (in Wi-Fi networks). Additionally, the host system MAY maintain additional L4S support cache on a per-host or per-IP-address, or other basis. When maintaining such lists, entries should be retired after a preferred TTL (e.g., 7 days) and preferably indexed per network to disambiguate between host and path L4S support.
 
-## Transport-Layer Congestion Feedback Requirements
-
-To preserve the integrity of the end-to-end L4S control loop, endpoints marking egress traffic as `ECT(1)` MUST implement active, protocol-compliant congestion feedback. Network-side traffic prioritization or downstream bandwidth allocation multipliers alone do not constitute an L4S deployment if the feedback loop is broken.
-
-Upon receiving packets marked with the Congestion Experienced (`CE`) codepoint, the receiving endpoint MUST record and report these congestion indicators back to the sender using the appropriate transport- or session-level signaling, such as:
-
-* **TCP Transports:** The network stack MUST implement Accurate ECN (AccECN) feedback. The receiver MUST process and reflect congestion markings back to the sender using the 3-bit Accurate ECN (ACE) field in the TCP header as specified in Section 3.2.2 of {{RFC9768}}. The implementation MAY also support the AccECN TCP Options specified in Section 3.2.3 of {{RFC9768}}.
-* **UDP-Based Real-Time Transports:** Applications or media frameworks utilizing RTP over UDP (such as WebRTC implementations) MUST implement the feedback mechanisms specified in {{RFC6679}}. The receiver MUST generate and transmit the RTP/AVPF ECN feedback packet format specified in Section 5.1 of {{RFC6679}} back to the sender, and send the RTCP XR summary report block specified in Section 5.2 of {{RFC6679}}.
-
 # Link-layer Subsystems Requirements
 
 The link-layer (modem and WiFi) subsystems manage the link-layer transmission over the radio interface and perform significant queueing on the uplink path.
@@ -166,6 +157,17 @@ Furthermore, middleboxes MUST NOT strip, modify, or drop packets containing TCP 
 
 ## Handshake Forwarding
 Middleboxes MUST transparently forward `SYN` and `SYN-ACK` packets that negotiate ECN or AccECN. Middleboxes MUST NOT drop TCP handshake packets solely due to the presence of ECN negotiation flags or AccECN TCP options.
+
+## Mitigation Against Non-Compliant Prioritization
+
+Network infrastructure nodes MUST NOT act on `ECT(1)` flags to prioritize traffic in alternative, non-compliant ways unless a valid end-to-end loop is actively maintained—where the network nodes execute compliant congestion marking and the transport endpoints record and reflect those markings in line with {{RFC9768}}.
+
+Modern network deployments MUST NOT be marketed or operated as supporting L4S if they prioritize traffic via alternative heuristics (such as bandwidth allocation multipliers) without enforcing or verifying true, end-to-end transport-layer feedback loop compliance.
+
+To ensure a compliant L4S deployment, the associated end-to-end transport loops MUST behave as follows:
+
+* **TCP Transports:** As specified in Section 4 of {{RFC9331}}, an L4S-compliant TCP transport stack MUST utilize Accurate ECN (AccECN) feedback. The receiver MUST process and reflect congestion markings back to the sender using the 3-bit Accurate ECN (ACE) field in the TCP header as specified in Section 3.2.2 of {{RFC9768}}. The implementation MAY also support the AccECN TCP Options specified in Section 3.2.3 of {{RFC9768}}.
+* **UDP-Based Real-Time Transports:** Applications or media frameworks utilizing RTP over UDP (such as WebRTC implementations) MUST implement the feedback mechanisms specified in {{RFC6679}}. The receiver MUST generate and transmit the RTP/AVPF ECN feedback packet format specified in Section 5.1 of {{RFC6679}} back to the sender, and send the RTCP XR summary report block specified in Section 5.2 of {{RFC6679}}.
 
 # Security Considerations
 
