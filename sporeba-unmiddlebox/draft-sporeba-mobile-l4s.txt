@@ -222,7 +222,7 @@ Table of Contents
    *  *Low-Priority Queue:* For queue-building traffic (e.g., CUBIC/
       Reno) and bulk data.
 
-   It MIGHT be desireable to prioritise high-priority traffic (e.g.
+   It MIGHT be desirable to prioritise high-priority traffic (e.g.
    signaling) ahead of Low-Latency traffic to prevent starvation of
    other queues in the abundance of L4S packets.  Such prioritisation
    SHOULD use a scheduling algorithm (e.g., Weighted Fair Queueing) and
@@ -334,7 +334,7 @@ Table of Contents
    bandwidth allocation multipliers).  The risk of such alternative
    mechanisms is incentivising marking ECT(1) codepoints in flows to be
    allocated into prioritised queues, without implementing full L4S
-   congesiton control as described in {#defense-against-misbehaving-
+   congestion control as described in {#defense-against-misbehaving-
    traffic}. The convergence point of such behaviour would be a
    prevalence of ECT(1) marked traffic that does not respond to CE
    markings and congestion in the incorrectly prioritised queues.
@@ -365,11 +365,6 @@ Table of Contents
               RFC 3168, DOI 10.17487/RFC3168, September 2001,
               <https://www.rfc-editor.org/rfc/rfc3168>.
 
-   [RFC6679]  Westerlund, M., Johansson, I., Perkins, C., O'Hanlon, P.,
-              and K. Carlberg, "Explicit Congestion Notification (ECN)
-              for RTP over UDP", RFC 6679, DOI 10.17487/RFC6679, August
-              2012, <https://www.rfc-editor.org/rfc/rfc6679>.
-
    [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
               2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
               May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
@@ -378,16 +373,6 @@ Table of Contents
               Notification (ECN) Experimentation", RFC 8311,
               DOI 10.17487/RFC8311, January 2018,
               <https://www.rfc-editor.org/rfc/rfc8311>.
-
-   [RFC8888]  Sarker, Z., Perkins, C., Singh, V., and M. Ramalho, "RTP
-              Control Protocol (RTCP) Feedback for Congestion Control",
-              RFC 8888, DOI 10.17487/RFC8888, January 2021,
-              <https://www.rfc-editor.org/rfc/rfc8888>.
-
-   [RFC9000]  Iyengar, J., Ed. and M. Thomson, Ed., "QUIC: A UDP-Based
-              Multiplexed and Secure Transport", RFC 9000,
-              DOI 10.17487/RFC9000, May 2021,
-              <https://www.rfc-editor.org/rfc/rfc9000>.
 
    [RFC9330]  Briscoe, B., Ed., De Schepper, K., Bagnulo, M., and G.
               White, "Low Latency, Low Loss, and Scalable Throughput
