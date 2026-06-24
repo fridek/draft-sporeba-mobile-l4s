@@ -72,6 +72,7 @@ Table of Contents
      2.1.  Socket APIs for UDP
      2.2.  TCP support detection and bootstrapping
        2.2.1.  Per-network detection and latency mitigation
+     2.3.  Transport-Layer Feedback Prerequisites
    3.  Link-layer Subsystems Requirements
      3.1.  Link-layer inbound packet reordering
      3.2.  Multi-Queue Scheduling and Bounded Latency
@@ -167,6 +168,40 @@ Table of Contents
    maintaining such lists, entries should be retired after a preferred
    TTL (e.g., 7 days) and preferably indexed per network to disambiguate
    between host and path L4S support.
+
+2.3.  Transport-Layer Feedback Prerequisites
+
+   To ensure a compliant L4S deployment, transport endpoints (hosts and
+   servers) MUST conform to the baseline protocol prerequisites for end-
+   to-end feedback loops (including, but not limited to, the following
+   core implementations):
+
+   *  *TCP Transports:* MUST utilize Accurate ECN (AccECN) feedback loop
+      mechanics, processing and reflecting congestion markings using the
+      3-bit Accurate ECN (ACE) field in the TCP header as specified in
+      Section 3.2.2 of [RFC9768].  The implementation MAY also support
+      the AccECN TCP Options specified in Section 3.2.3 of [RFC9768].
+
+   *  *UDP-Based Real-Time Transports:* Applications or media frameworks
+      utilizing RTP over UDP (such as WebRTC implementations) MUST
+      implement high-fidelity feedback loops utilizing the per-RTP
+      packet congestion control feedback report format specified in
+      Section 3.1 of [RFC8888] alongside the session negotiation and
+      signaling parameters specified in [RFC6679].  The receiver MUST
+      generate and transmit the RTP/AVPF ECN feedback packet format
+      specified in Section 5.1 of [RFC6679] back to the sender, and send
+      the RTCP XR summary report block specified in Section 5.2 of
+      [RFC6679].
+
+   *  *QUIC Transports:* MUST utilize the native, fine-grained ECN
+      feedback loops built into the IETF QUIC transport protocol layer
+      as specified in [RFC9000].
+
+   *  *Other Transport Protocols:* Other transport layers (such as SCTP
+      or DCCP) MUST utilize a fine-grained, protocol-compliant feedback
+      loop mechanism capable of accurately reporting the extent of
+      congestion markings back to the sender as specified in Section 4.2
+      of [RFC9331].
 
 3.  Link-layer Subsystems Requirements
 
@@ -312,46 +347,17 @@ Table of Contents
 
    Network infrastructure nodes MUST NOT act on ECT(1) flags to
    prioritize traffic in alternative, non-compliant ways unless a valid
-   end-to-end loop is actively maintained—where the network nodes
-   execute compliant congestion marking and the transport endpoints
-   record and reflect those markings in line with the transport-specific
-   requirements specified in Section 4.2 of [RFC9331].
+   end-to-end feedback loop is actively maintained—where the network
+   nodes execute compliant congestion marking and the transport
+   endpoints record and reflect those markings in line with the
+   transport-specific requirements specified in Section 4.2 of
+   [RFC9331].
 
    Modern network deployments MUST NOT be marketed or operated as
    supporting L4S if they prioritize traffic via alternative heuristics
    (such as bandwidth allocation multipliers) without enforcing or
-   verifying true, end-to-end transport-layer feedback loop compliance.
-
-   To ensure a compliant L4S deployment, the associated end-to-end
-   transport loops MUST conform to the baseline protocol prerequisites
-   (including, but not limited to, the following core implementations):
-
-   *  *TCP Transports:* MUST utilize Accurate ECN (AccECN) feedback loop
-      mechanics, processing and reflecting congestion markings using the
-      3-bit Accurate ECN (ACE) field in the TCP header as specified in
-      Section 3.2.2 of [RFC9768].  The implementation MAY also support
-      the AccECN TCP Options specified in Section 3.2.3 of [RFC9768].
-
-   *  *UDP-Based Real-Time Transports:* Applications or media frameworks
-      utilizing RTP over UDP (such as WebRTC implementations) MUST
-      implement high-fidelity feedback loops utilizing the per-RTP
-      packet congestion control feedback report format specified in
-      Section 3.1 of [RFC8888] alongside the session negotiation and
-      signaling parameters specified in [RFC6679].  The receiver MUST
-      generate and transmit the RTP/AVPF ECN feedback packet format
-      specified in Section 5.1 of [RFC6679] back to the sender, and send
-      the RTCP XR summary report block specified in Section 5.2 of
-      [RFC6679].
-
-   *  *QUIC Transports:* MUST utilize the native, fine-grained ECN
-      feedback loops built into the IETF QUIC transport protocol layer
-      as specified in [RFC9000].
-
-   *  *Other Transport Protocols:* Other transport layers (such as SCTP
-      or DCCP) MUST utilize a fine-grained, protocol-compliant feedback
-      loop mechanism capable of accurately reporting the extent of
-      congestion markings back to the sender as specified in Section 4.2
-      of [RFC9331].
+   verifying true, end-to-end transport-layer feedback loop compliance
+   as detailed in (#transport-feedback-prerequisites).
 
 5.  Security Considerations
 
