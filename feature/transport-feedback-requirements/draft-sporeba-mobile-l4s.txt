@@ -314,7 +314,8 @@ Table of Contents
    prioritize traffic in alternative, non-compliant ways unless a valid
    end-to-end loop is actively maintained—where the network nodes
    execute compliant congestion marking and the transport endpoints
-   record and reflect those markings in line with [RFC9768].
+   record and reflect those markings in line with the transport-specific
+   requirements specified in Section 4.2 of [RFC9331].
 
    Modern network deployments MUST NOT be marketed or operated as
    supporting L4S if they prioritize traffic via alternative heuristics
@@ -322,23 +323,35 @@ Table of Contents
    verifying true, end-to-end transport-layer feedback loop compliance.
 
    To ensure a compliant L4S deployment, the associated end-to-end
-   transport loops MUST behave as follows:
+   transport loops MUST conform to the baseline protocol prerequisites
+   (including, but not limited to, the following core implementations):
 
-   *  *TCP Transports:* As specified in Section 4 of [RFC9331], an L4S-
-      compliant TCP transport stack MUST utilize Accurate ECN (AccECN)
-      feedback.  The receiver MUST process and reflect congestion
-      markings back to the sender using the 3-bit Accurate ECN (ACE)
-      field in the TCP header as specified in Section 3.2.2 of
-      [RFC9768].  The implementation MAY also support the AccECN TCP
-      Options specified in Section 3.2.3 of [RFC9768].
+   *  *TCP Transports:* MUST utilize Accurate ECN (AccECN) feedback loop
+      mechanics, processing and reflecting congestion markings using the
+      3-bit Accurate ECN (ACE) field in the TCP header as specified in
+      Section 3.2.2 of [RFC9768].  The implementation MAY also support
+      the AccECN TCP Options specified in Section 3.2.3 of [RFC9768].
 
    *  *UDP-Based Real-Time Transports:* Applications or media frameworks
       utilizing RTP over UDP (such as WebRTC implementations) MUST
-      implement the feedback mechanisms specified in [RFC6679].  The
-      receiver MUST generate and transmit the RTP/AVPF ECN feedback
-      packet format specified in Section 5.1 of [RFC6679] back to the
-      sender, and send the RTCP XR summary report block specified in
-      Section 5.2 of [RFC6679].
+      implement high-fidelity feedback loops utilizing the per-RTP
+      packet congestion control feedback report format specified in
+      Section 3.1 of [RFC8888] alongside the session negotiation and
+      signaling parameters specified in [RFC6679].  The receiver MUST
+      generate and transmit the RTP/AVPF ECN feedback packet format
+      specified in Section 5.1 of [RFC6679] back to the sender, and send
+      the RTCP XR summary report block specified in Section 5.2 of
+      [RFC6679].
+
+   *  *QUIC Transports:* MUST utilize the native, fine-grained ECN
+      feedback loops built into the IETF QUIC transport protocol layer
+      as specified in [RFC9000].
+
+   *  *Other Transport Protocols:* Other transport layers (such as SCTP
+      or DCCP) MUST utilize a fine-grained, protocol-compliant feedback
+      loop mechanism capable of accurately reporting the extent of
+      congestion markings back to the sender as specified in Section 4.2
+      of [RFC9331].
 
 5.  Security Considerations
 
@@ -378,6 +391,16 @@ Table of Contents
               Notification (ECN) Experimentation", RFC 8311,
               DOI 10.17487/RFC8311, January 2018,
               <https://www.rfc-editor.org/rfc/rfc8311>.
+
+   [RFC8888]  Sarker, Z., Perkins, C., Singh, V., and M. Ramalho, "RTP
+              Control Protocol (RTCP) Feedback for Congestion Control",
+              RFC 8888, DOI 10.17487/RFC8888, January 2021,
+              <https://www.rfc-editor.org/rfc/rfc8888>.
+
+   [RFC9000]  Iyengar, J., Ed. and M. Thomson, Ed., "QUIC: A UDP-Based
+              Multiplexed and Secure Transport", RFC 9000,
+              DOI 10.17487/RFC9000, May 2021,
+              <https://www.rfc-editor.org/rfc/rfc9000>.
 
    [RFC9330]  Briscoe, B., Ed., De Schepper, K., Bagnulo, M., and G.
               White, "Low Latency, Low Loss, and Scalable Throughput
