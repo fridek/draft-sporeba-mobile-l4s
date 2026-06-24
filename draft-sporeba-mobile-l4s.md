@@ -39,10 +39,7 @@ author:
 
 normative:
   RFC3168:
-  RFC6679:
   RFC8311:
-  RFC8888:
-  RFC9000:
   RFC9330:
   RFC9331:
   RFC9768:
@@ -121,7 +118,7 @@ Some modem systems are known to already support high-priority and low-priority q
 *  **High-Priority Queue:** For signaling, IMS voice (VoLTE/VoNR), and other critical real-time traffic.
 *  **Low-Priority Queue:** For queue-building traffic (e.g., CUBIC/Reno) and bulk data.
 
-It MIGHT be desireable to prioritise high-priority traffic (e.g. signaling) ahead of Low-Latency traffic to prevent starvation of other queues in the abundance of L4S packets. Such prioritisation SHOULD use a scheduling algorithm (e.g., Weighted Fair Queueing) and aim to minimize the queue buildup in the Low-Latency queue.
+It MIGHT be desirable to prioritise high-priority traffic (e.g. signaling) ahead of Low-Latency traffic to prevent starvation of other queues in the abundance of L4S packets. Such prioritisation SHOULD use a scheduling algorithm (e.g., Weighted Fair Queueing) and aim to minimize the queue buildup in the Low-Latency queue.
 
 ## Packet Classification
 
@@ -165,7 +162,7 @@ Flow-Preserving Packet Processors MUST transparently forward `SYN` and `SYN-ACK`
 
 Network infrastructure nodes MUST NOT act on `ECT(1)` flags to prioritize traffic in alternative, non-compliant ways unless a valid end-to-end feedback loop is actively maintained—where the network nodes execute compliant congestion marking and the transport endpoints record and reflect those markings in line with the transport-specific requirements specified in Section 4.2 of {{RFC9331}}.
 
-Network deployments MUST NOT be marketed or operated as supporting L4S if they prioritize traffic via alternative heuristics (such as bandwidth allocation multipliers). The risk of such alternative mechanisms is incentivising marking `ECT(1)` codepoints in flows to be allocated into prioritised queues, without implementing full L4S congesiton control as described in {#defense-against-misbehaving-traffic}. The convergence point of such behaviour would be a prevalence of `ECT(1)` marked traffic that does not respond to `CE` markings and congestion in the incorrectly prioritised queues.
+Network deployments MUST NOT be marketed or operated as supporting L4S if they prioritize traffic via alternative heuristics (such as bandwidth allocation multipliers). The risk of such alternative mechanisms is incentivising marking `ECT(1)` codepoints in flows to be allocated into prioritised queues, without implementing full L4S congestion control as described in {#defense-against-misbehaving-traffic}. The convergence point of such behaviour would be a prevalence of `ECT(1)` marked traffic that does not respond to `CE` markings and congestion in the incorrectly prioritised queues.
 
 # Security Considerations
 
