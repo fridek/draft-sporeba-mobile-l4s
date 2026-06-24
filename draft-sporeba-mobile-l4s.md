@@ -39,12 +39,14 @@ author:
 
 normative:
   RFC3168:
+  RFC6679:
   RFC8311:
+  RFC8888:
+  RFC9000:
   RFC9330:
   RFC9331:
   RFC9768:
   RFC9956:
-  RFC6679:
 
 informative:
   I-D.livingood-low-latency-deployment:
