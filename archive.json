@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-23T01:03:38.378582+00:00",
+  "timestamp": "2026-06-25T01:06:00.552476+00:00",
   "repo": "fridek/draft-sporeba-mobile-l4s",
   "labels": [
     {
@@ -56,26 +56,268 @@
       "id": "PR_kwDOS2kUfc7pRn4J",
       "title": "Add transport feedback requirements (RFC9768 and RFC6679)",
       "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/pull/1",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "Irlanki",
       "authorAssociation": "COLLABORATOR",
       "assignees": [],
       "labels": [],
       "body": "Added a new subsection (## Transport-Layer Congestion Feedback Requirements) under the Host OS section.\r\n\r\nThis addresses endpoint pseudo-L4S deployments by strictly requiring active, protocol-compliant congestion loop closure. ",
       "createdAt": "2026-06-22T16:40:32Z",
-      "updatedAt": "2026-06-22T16:40:33Z",
+      "updatedAt": "2026-06-24T07:38:33Z",
       "baseRepository": "fridek/draft-sporeba-mobile-l4s",
       "baseRefName": "main",
       "baseRefOid": "c2af5c97eb0ae3342da181481b09a04f1615c270",
       "headRepository": "fridek/draft-sporeba-mobile-l4s",
       "headRefName": "feature/transport-feedback-requirements",
-      "headRefOid": "44f9a9b550668f20ef5a64cc1f8ee8eed7d1c2c9",
+      "headRefOid": "bd4b4835e504464f3d8b7e6f80aa53c04504cb67",
+      "closedAt": "2026-06-24T07:38:33Z",
+      "mergedAt": "2026-06-24T07:38:33Z",
+      "mergedBy": "fridek",
+      "mergeCommit": {
+        "oid": "38c292b46b3edb71a8c4c0a45fcecdc6d70420d3"
+      },
+      "comments": [],
+      "reviews": [
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD2Ndlw",
+          "commit": {
+            "abbreviatedOid": "44f9a9b"
+          },
+          "author": "fridek",
+          "authorAssociation": "OWNER",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-23T12:20:56Z",
+          "updatedAt": "2026-06-23T13:47:18Z",
+          "comments": [
+            {
+              "originalPosition": 23,
+              "body": "I think this would fit well into section 4 on the middleboxes, which I have left low on such detail. Section 2 covers Host system requiremets (i.e. mobile operating system).",
+              "createdAt": "2026-06-23T12:20:56Z",
+              "updatedAt": "2026-06-23T13:47:18Z"
+            },
+            {
+              "originalPosition": 25,
+              "body": "Perhaps we could write more generally: \n\n\"Devices that do not implement queueing feedback by marking the ECN codepoints in line with RFC 9768 MUST NOT act on the `ECT(1)` flags by prioritising the traffic in alternative, non-compliant ways.\" \n\nI believe there are some sections already describing the non-compliance scenarios, such as rfc3168 section 7 and 8 and rfc 9786 section 3.3. I don't think anyone predicted what we see in practice - that deployments might be marketed as L4S without implementing L4S.",
+              "createdAt": "2026-06-23T13:45:07Z",
+              "updatedAt": "2026-06-23T13:47:18Z"
+            },
+            {
+              "originalPosition": 29,
+              "body": "This is minor can we check AccECN is \"MUST\" and not \"SHOULD\"? Is using only classic ECN considering a compliant implementation?",
+              "createdAt": "2026-06-23T13:47:05Z",
+              "updatedAt": "2026-06-23T13:47:18Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD8ClNw",
+          "commit": {
+            "abbreviatedOid": "44f9a9b"
+          },
+          "author": "Irlanki",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T05:12:01Z",
+          "updatedAt": "2026-06-24T05:12:01Z",
+          "comments": [
+            {
+              "originalPosition": 29,
+              "body": "It is a strict MUST for L4S compliance. Classic ECN feedback is not considered a compliant implementation for an L4S endpoint because it cannot provide the high-fidelity signaling required by a Scalable congestion control algorithm.\r\n\r\nPer the underlying specifications:\r\n\r\nRFC 9331, Section 4.2 (Prerequisite Transport Feedback): Explicitly states that for a transport protocol to provide Scalable congestion control, it MUST provide feedback of the accurate extent of CE marking on the forward path. For TCP, it explicitly notes that support for accurate ECN feedback requirements is a prerequisite.\r\n\r\nRFC 9768, Section 3.2.2 (The ACE Field): Formally mandates the packet-based loop mechanics, stating that a Data Receiver MUST encode the 3 least significant bits of its packet-based CE counter (r.cep) into the overloaded 3-bit ACE field in the main TCP header.\r\n\r\n(Note: In contrast, Section 3.2.3 of RFC 9768 specifies that the byte-counting AccECN TCP Options are supplementary and remain optional).",
+              "createdAt": "2026-06-24T05:12:01Z",
+              "updatedAt": "2026-06-24T05:12:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD8GWsA",
+          "commit": {
+            "abbreviatedOid": "44f9a9b"
+          },
+          "author": "Irlanki",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T05:23:51Z",
+          "updatedAt": "2026-06-24T05:23:51Z",
+          "comments": [
+            {
+              "originalPosition": 23,
+              "body": "Acknowledged. Feedback is strictly an endpoint responsibility, which is why I originally put it in the host section.\r\n\r\nHowever, since this rule acts as a direct constraint on how the network handles traffic, it makes sense to place it in the Middleboxes section also. I have updated and consolidated the text there.",
+              "createdAt": "2026-06-24T05:23:51Z",
+              "updatedAt": "2026-06-24T05:23:51Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD8HhuQ",
+          "commit": {
+            "abbreviatedOid": "44f9a9b"
+          },
+          "author": "Irlanki",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T05:27:01Z",
+          "updatedAt": "2026-06-24T05:27:01Z",
+          "comments": [
+            {
+              "originalPosition": 25,
+              "body": "Thanks, Rephrased the text as per your suggestion. I also expanded it slightly to explicitly bring in the core transport protocols (TCP, UDP/RTP, and QUIC) under the blanket prerequisite loop rules defined in RFC 9331 Section 4.2, and added specific section references for their respective feedback expectations (such as  per-packet metric format in RFC 8888).",
+              "createdAt": "2026-06-24T05:27:01Z",
+              "updatedAt": "2026-06-24T05:27:01Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD8PuIA",
+          "commit": {
+            "abbreviatedOid": "44f9a9b"
+          },
+          "author": "Irlanki",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T05:54:47Z",
+          "updatedAt": "2026-06-24T05:54:47Z",
+          "comments": [
+            {
+              "originalPosition": 23,
+              "body": "Thinking about this further, I still felt that host requirements belong strictly in the host section, since \"host\" refers to endpoints like devices or servers that manage transport stacks.\r\n\r\nTo keep the architecture clean, I separated the text into two distinct sections:\r\n\r\nThe middlebox constraints stay in the Middlebox section.\r\n\r\nThe specific endpoint protocol requirements (TCP, UDP, QUIC) are placed under the Host section.\r\n\r\nI then added an explicit cross-reference from the middlebox section linking back to the host prerequisites. This keeps the separation of concerns perfect. Please check the latest push",
+              "createdAt": "2026-06-24T05:54:47Z",
+              "updatedAt": "2026-06-24T05:54:47Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD8fLvw",
+          "commit": {
+            "abbreviatedOid": "bd4b483"
+          },
+          "author": "lcolitti",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T06:44:20Z",
+          "updatedAt": "2026-06-24T06:44:21Z",
+          "comments": [
+            {
+              "originalPosition": 26,
+              "body": "It feels like we should say that hosts SHOULD (not MAY) implement AccECN, and why.",
+              "createdAt": "2026-06-24T06:44:20Z",
+              "updatedAt": "2026-06-24T06:44:21Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD8fZqg",
+          "commit": {
+            "abbreviatedOid": "bd4b483"
+          },
+          "author": "lcolitti",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T06:44:57Z",
+          "updatedAt": "2026-06-24T07:03:22Z",
+          "comments": [
+            {
+              "originalPosition": 24,
+              "body": "Compliant with what?",
+              "createdAt": "2026-06-24T06:44:57Z",
+              "updatedAt": "2026-06-24T07:03:22Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "number": 2,
+      "id": "PR_kwDOS2kUfc7qE_cm",
+      "title": "Specify the on-path devices we are concerned with. Apply minor improvements",
+      "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/pull/2",
+      "state": "OPEN",
+      "author": "fridek",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "I have removed the section on server requirements, and added an paragraph on scoping - omitting anything beyond a carrier or ISP network. This is also to reflect the conversation we had on scoping. I also think that the detection of end-to-end L4S support is impractical, and likely won't get traction.",
+      "createdAt": "2026-06-24T11:17:50Z",
+      "updatedAt": "2026-06-24T13:45:16Z",
+      "baseRepository": "fridek/draft-sporeba-mobile-l4s",
+      "baseRefName": "main",
+      "baseRefOid": "38c292b46b3edb71a8c4c0a45fcecdc6d70420d3",
+      "headRepository": "fridek/draft-sporeba-mobile-l4s",
+      "headRefName": "sporeba-unmiddlebox",
+      "headRefOid": "06dcfe86c6c9b761be503c70aecdbfbd43035a30",
       "closedAt": null,
       "mergedAt": null,
       "mergedBy": null,
       "mergeCommit": null,
       "comments": [],
-      "reviews": []
+      "reviews": [
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD-4ybg",
+          "commit": {
+            "abbreviatedOid": "d369b36"
+          },
+          "author": "Irlanki",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T12:42:00Z",
+          "updatedAt": "2026-06-24T12:42:00Z",
+          "comments": [
+            {
+              "originalPosition": 39,
+              "body": "Looks fine. RFC8888, RFC6679, RFC9000 can be removed from normative as these are no longer referenced. ",
+              "createdAt": "2026-06-24T12:42:00Z",
+              "updatedAt": "2026-06-24T12:44:35Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD-_bsw",
+          "commit": {
+            "abbreviatedOid": "d369b36"
+          },
+          "author": "Irlanki",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T12:55:32Z",
+          "updatedAt": "2026-06-24T12:55:32Z",
+          "comments": [
+            {
+              "originalPosition": 53,
+              "body": "desireable -> desirable\n",
+              "createdAt": "2026-06-24T12:55:32Z",
+              "updatedAt": "2026-06-24T12:55:32Z"
+            }
+          ]
+        },
+        {
+          "id": "PRR_kwDOS2kUfc8AAAABD_AxNg",
+          "commit": {
+            "abbreviatedOid": "d369b36"
+          },
+          "author": "Irlanki",
+          "authorAssociation": "COLLABORATOR",
+          "state": "COMMENTED",
+          "body": "",
+          "createdAt": "2026-06-24T12:58:33Z",
+          "updatedAt": "2026-06-24T12:58:34Z",
+          "comments": [
+            {
+              "originalPosition": 99,
+              "body": "congesiton -> congestion",
+              "createdAt": "2026-06-24T12:58:34Z",
+              "updatedAt": "2026-06-24T12:58:34Z"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
