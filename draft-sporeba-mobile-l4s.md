@@ -60,6 +60,9 @@ This document documents best practices for deployment of Low Latency, Low Loss, 
 
 L4S (Low Latency, Low Loss, Scalable Throughput) {{RFC9330}} offers a framework to significantly reduce queuing delay while maintaining high throughput. Mobile devices often have to react to quickly changing connectivity conditions and may be subject to variable throughput and connection quality. This can cause large variations in user-perceived latency and greater bufferbloat than in other devices. Deploying L4S in a mobile ecosystem requires co-operation across multiple layers: the network stack, the host operating system (OS), and link-layer drivers and firmware (e.g., Wi-Fi and cellular modem), and the network. This document outlines best current practices for each of these subsystems to achieve reliable, low-latency performance in the field.
 
+## Conventions and Definitions
+
+{::boilerplate bcp14-tagged}
 
 # Host Operating System Requirements
 
