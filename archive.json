@@ -1,6 +1,6 @@
 {
   "magic": "E!vIA5L86J2I",
-  "timestamp": "2026-06-25T01:06:00.552476+00:00",
+  "timestamp": "2026-06-28T01:09:52.847432+00:00",
   "repo": "fridek/draft-sporeba-mobile-l4s",
   "labels": [
     {
@@ -49,7 +49,72 @@
       "color": "ffffff"
     }
   ],
-  "issues": [],
+  "issues": [
+    {
+      "number": 4,
+      "id": "I_kwDOS2kUfc8AAAABG1PmsQ",
+      "title": "How to queue CE marked packets",
+      "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/issues/4",
+      "state": "OPEN",
+      "author": "lcolitti",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "The text currently says that CE marked packets MUST be put in the low-latency queue. Is this correct? Doesn't that mean that potentially queue-building Classic ECN traffic might be put in the low-latency queue, and potentially starve that queue?",
+      "createdAt": "2026-06-26T16:14:54Z",
+      "updatedAt": "2026-06-26T16:14:54Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 5,
+      "id": "I_kwDOS2kUfc8AAAABG1P9nA",
+      "title": "Check the text for per-packet ECN controls for multiplexed sockets",
+      "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/issues/5",
+      "state": "OPEN",
+      "author": "fridek",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "Sockets that multiplex multiple traffic types (e.g., WebRTC multiplexing RTP media, RTCP control, and SCTP data channels on a single UDP socket) cannot use simple socket-wide setsockopt(IP_TOS) because some flows (like SCTP) are queue-building and must not be marked ECT(1).",
+      "createdAt": "2026-06-26T16:15:45Z",
+      "updatedAt": "2026-06-26T16:15:45Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 6,
+      "id": "I_kwDOS2kUfc8AAAABG1Qb6w",
+      "title": "Consider citing RFC 9557",
+      "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/issues/6",
+      "state": "OPEN",
+      "author": "lcolitti",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "https://datatracker.ietf.org/doc/rfc9957/ describes an algorithm to eject non-L4S traffic from the low-latency queue. Should we say that link layers SHOULD (or MAY) implement this algorithm?",
+      "createdAt": "2026-06-26T16:17:00Z",
+      "updatedAt": "2026-06-26T16:17:00Z",
+      "closedAt": null,
+      "comments": []
+    },
+    {
+      "number": 7,
+      "id": "I_kwDOS2kUfc8AAAABG1QcaA",
+      "title": "Align with RFC 9332: Dual-Queue Coupled AQM for L4S",
+      "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/issues/7",
+      "state": "OPEN",
+      "author": "fridek",
+      "authorAssociation": "OWNER",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-06-26T16:17:01Z",
+      "updatedAt": "2026-06-26T16:17:01Z",
+      "closedAt": null,
+      "comments": []
+    }
+  ],
   "pulls": [
     {
       "number": 1,
@@ -237,24 +302,26 @@
       "id": "PR_kwDOS2kUfc7qE_cm",
       "title": "Specify the on-path devices we are concerned with. Apply minor improvements",
       "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/pull/2",
-      "state": "OPEN",
+      "state": "MERGED",
       "author": "fridek",
       "authorAssociation": "OWNER",
       "assignees": [],
       "labels": [],
       "body": "I have removed the section on server requirements, and added an paragraph on scoping - omitting anything beyond a carrier or ISP network. This is also to reflect the conversation we had on scoping. I also think that the detection of end-to-end L4S support is impractical, and likely won't get traction.",
       "createdAt": "2026-06-24T11:17:50Z",
-      "updatedAt": "2026-06-24T13:45:16Z",
+      "updatedAt": "2026-06-25T06:33:07Z",
       "baseRepository": "fridek/draft-sporeba-mobile-l4s",
       "baseRefName": "main",
       "baseRefOid": "38c292b46b3edb71a8c4c0a45fcecdc6d70420d3",
       "headRepository": "fridek/draft-sporeba-mobile-l4s",
       "headRefName": "sporeba-unmiddlebox",
       "headRefOid": "06dcfe86c6c9b761be503c70aecdbfbd43035a30",
-      "closedAt": null,
-      "mergedAt": null,
-      "mergedBy": null,
-      "mergeCommit": null,
+      "closedAt": "2026-06-25T06:33:07Z",
+      "mergedAt": "2026-06-25T06:33:07Z",
+      "mergedBy": "fridek",
+      "mergeCommit": {
+        "oid": "f53cde6d7a9aa7b2269047ffcd517a1a2dcd4c31"
+      },
       "comments": [],
       "reviews": [
         {
@@ -318,6 +385,32 @@
           ]
         }
       ]
+    },
+    {
+      "number": 3,
+      "id": "PR_kwDOS2kUfc7rDJZZ",
+      "title": "Link layer requirements section updates",
+      "url": "https://github.com/fridek/draft-sporeba-mobile-l4s/pull/3",
+      "state": "OPEN",
+      "author": "lcolitti",
+      "authorAssociation": "COLLABORATOR",
+      "assignees": [],
+      "labels": [],
+      "body": "",
+      "createdAt": "2026-06-26T16:12:38Z",
+      "updatedAt": "2026-06-26T16:12:38Z",
+      "baseRepository": "fridek/draft-sporeba-mobile-l4s",
+      "baseRefName": "main",
+      "baseRefOid": "bcb341e5a363830fbc6c3fd9ef68921262576a6d",
+      "headRepository": "fridek/draft-sporeba-mobile-l4s",
+      "headRefName": "link-layer-updates",
+      "headRefOid": "c09a43927ccfd085721916ebb1f48700b22baf3b",
+      "closedAt": null,
+      "mergedAt": null,
+      "mergedBy": null,
+      "mergeCommit": null,
+      "comments": [],
+      "reviews": []
     }
   ]
 }
